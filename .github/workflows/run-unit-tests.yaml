@@ -20,6 +20,10 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
 
+      # run linter
+      - name: Run Checkstyle Linter
+        run: make check
+
       # build everything (includes running unit tests)
       - name: Run JUnit Tests
         run: make test
