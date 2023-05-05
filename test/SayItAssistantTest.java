@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SayItAssistantTest {
   @Test
   void testDummy() {
-    System.out.println("Not implemented.");
     assertEquals(0, 0);
   }
 }
