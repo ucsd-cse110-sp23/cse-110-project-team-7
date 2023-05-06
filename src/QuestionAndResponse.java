@@ -11,6 +11,9 @@ import javax.swing.JPanel;
  * Text region UI component that displays a question and its response.
  */
 class QuestionAndResponse extends JPanel {
+  private static final int WIDTH = 200;
+  private static final int HEIGHT = 60;
+
   private JLabel questionLabel;
   private JLabel responseLabel;
 
@@ -18,19 +21,19 @@ class QuestionAndResponse extends JPanel {
   Font font = new Font(Font.SANS_SERIF, Font.BOLD, 14);
 
   QuestionAndResponse() {
-    this.setLayout(new GridLayout(2, 2));
-    this.setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
-    this.setBackground(darkGray);
+    setLayout(new GridLayout(2, 2));
+    setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
+    setBackground(darkGray);
 
     questionLabel = new JLabel("Question here...");
-    questionLabel.setPreferredSize(new Dimension(200, 60));
+    questionLabel.setPreferredSize(new Dimension(WIDTH, HEIGHT));
     questionLabel.setFont(font);
     questionLabel.setHorizontalAlignment(JLabel.RIGHT);
     questionLabel.setForeground(Color.WHITE);
     add(questionLabel, BorderLayout.LINE_END);
 
     responseLabel = new JLabel("Response here...");
-    responseLabel.setPreferredSize(new Dimension(200, 60));
+    responseLabel.setPreferredSize(new Dimension(WIDTH, HEIGHT));
     responseLabel.setFont(font);
     responseLabel.setHorizontalAlignment(JLabel.LEFT);
     responseLabel.setForeground(Color.WHITE);

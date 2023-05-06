@@ -61,8 +61,10 @@ class Storage {
     }
   }
 
-  public void add(String question, String response) {
-    history.add(new HistoryItem(question, response));
+  public HistoryItem add(String question, String response) {
+    HistoryItem out = new HistoryItem(question, response);
+    history.add(out);
+    return out;
   }
 
   public void add(long timestamp, String question, String response) {
