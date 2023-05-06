@@ -10,7 +10,7 @@ bin/SayItAssistantTest.class: bin/SayItAssistant.class test/*.java
 	javac -cp lib/*:bin -d bin test/*.java
 
 test: bin/SayItAssistantTest.class
-	java -cp lib/*:bin org.junit.platform.console.ConsoleLauncher -c SayItAssistantTest
+	java -cp lib/*:bin org.junit.platform.console.ConsoleLauncher -c SayItAssistantTest --reports-dir=reports
 
 check:
 	java -jar lib/checkstyle-10.10.0-all.jar -c checkstyle.xml src/*
