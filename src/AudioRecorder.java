@@ -8,6 +8,7 @@ public class AudioRecorder {
     
     private AudioFormat format;
     private TargetDataLine targetDataLine;
+    private Thread audioThread;
 
     /**
      * The constructor generates the audio
@@ -17,11 +18,11 @@ public class AudioRecorder {
      * Source: CSE 110 Lab 5
      */
     public AudioRecorder() {
-        float sampleRate = 44100;
+        float sampleRate = 8000;
 
         int sampleSizeInBits = 16;
 
-        int channels = 2;
+        int channels = 1;
 
         boolean signed = true;
 
@@ -43,33 +44,46 @@ public class AudioRecorder {
      * Source: CSE 110 Lab 5
      */
     public void startRecording() {
-        Thread thread = new Thread(
-            () -> {
-                try {
+        try {
 
-                    DataLine.Info dataLineInfo = new DataLine.Info(
-                        TargetDataLine.class,
-                        this.format
-                    );
+            this.targetDataLine = AudioSystem.getTargetDataLine(this.format);
+            this.targetDataLine.open(this.format);
+            this.targetDataLine.start();
 
-                    this.targetDataLine = (TargetDataLine) AudioSystem.getLine(dataLineInfo);
-                    this.targetDataLine.open(this.format);
-                    this.targetDataLine.start();
-
-                    AudioInputStream audioInputStream = new AudioInputStream(targetDataLine);
-                    File audioFile = new File("question.wav");
+            AudioInputStream audioInputStream = new AudioInputStream(this.targetDataLine);
+            File audioFile = new File("question.wav");
+            
+            Thread audioThread = new Thread(() -> {
+                try{
                     AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE,
                         audioFile);
-                } catch (Exception err){
+                } catch (Exception err) {
                     err.printStackTrace();
                 }
+            });
+
+            audioThread.start();
+
+            this.audioThread = audioThread;
+
+            } catch (Exception err){
+                err.printStackTrace();
             }
-        );
-        thread.start();
     }
 
+    /**
+     * This method stops the thread that runs the recording
+     * 
+     * Source: CSE 110 Lab 5
+     */
     public void stopRecording() {
-        this.targetDataLine.stop();
-        this.targetDataLine.close();
+        try {
+            this.targetDataLine.stop();
+            this.targetDataLine.close();
+            this.audioThread.join();
+            System.out.println("Finished recording");
+        } catch (Exception err) {
+            err.printStackTrace();
+        }
     }
 }
