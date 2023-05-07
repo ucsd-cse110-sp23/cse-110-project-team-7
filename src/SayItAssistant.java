@@ -55,6 +55,7 @@ class TaskBar extends JPanel {
   private JButton deleteQuestionButton;
   private JButton newQuestionButton;
   private JButton clearAllButton;
+  public AudioRecorder audioRecorder;
 
   private boolean recording = false;
 
@@ -72,10 +73,16 @@ class TaskBar extends JPanel {
     newQuestionButton = new JButton("New Question");
     newQuestionButton.setFont(new Font("Sans-serif", Font.BOLD, 10));
     add(newQuestionButton, BorderLayout.CENTER);
+    this.audioRecorder = new AudioRecorder();
 
     newQuestionButton.addActionListener(
       (ActionEvent e) -> {
         recording = !recording;
+        if(recording) {
+          audioRecorder.startRecording();
+        } else {
+          audioRecorder.stopRecording();
+        }
         newQuestionButton.setText(recording ? "Stop Recording" : "New Question");
       }
     );
