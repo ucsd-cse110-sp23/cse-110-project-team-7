@@ -24,7 +24,7 @@ class SayItAssistantTest {
 
   @Test
   void testStorageDelete() {
-    Storage s = new Storage();
+    Storage s = new Storage("[]");
     s.delete(null);
     assertEquals(s.history.size(), 0);
 
@@ -37,7 +37,7 @@ class SayItAssistantTest {
 
   @Test
   void testStorageSave() throws Exception {
-    Storage s = new Storage();
+    Storage s = new Storage("[]");
     s.add(0, "question", "response");
 
     String dest = "test_history.json";
