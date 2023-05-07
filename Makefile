@@ -6,7 +6,7 @@ bin/SayItAssistant.class: src/*.java
 run: bin/SayItAssistant.class
 	java -cp lib/*:bin SayItAssistant
 
-bin/SayItAssistantTest.class: test/*.java
+bin/SayItAssistantTest.class: bin/SayItAssistant.class test/*.java
 	javac -cp lib/*:bin -d bin test/*.java
 
 test: bin/SayItAssistantTest.class
