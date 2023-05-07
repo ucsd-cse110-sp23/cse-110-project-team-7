@@ -14,7 +14,7 @@ import javax.swing.JScrollPane;
  * Vertical toolbar showing past questions.
  */
 class HistoryBar extends JPanel {
-  private static final int WIDTH = 100;
+  private static final int WIDTH = 200;
   private static final int HEIGHT = 100;
 
   private Box vbox;
@@ -25,6 +25,10 @@ class HistoryBar extends JPanel {
   Color lightBlue = new Color(59, 59, 217);
   Font font = new Font(Font.SANS_SERIF, Font.BOLD, 14);
 
+  /**
+   * A vertically-scrolling box that stores the user's
+   *   question/response history as buttons.
+   */
   HistoryBar() {
     setLayout(new BorderLayout());
 
@@ -38,7 +42,12 @@ class HistoryBar extends JPanel {
     add(scroller, BorderLayout.CENTER);
   }
 
-  void add(HistoryItem item) {
-    vbox.add(new JButton(item.question), 0);
+  /**
+   * Add the given question/response pair to the screen.
+   */
+  JButton add(HistoryItem item) {
+    JButton out = new JButton(item.question);
+    vbox.add(out, 0);
+    return out;
   }
 }

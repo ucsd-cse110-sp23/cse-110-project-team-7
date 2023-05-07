@@ -20,6 +20,9 @@ class TaskBar extends JPanel {
   Color lightGray = new Color(217, 217, 217);
   Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 10);
 
+  /**
+   * Instantiate a new GridLayout with 3 equally-spaced buttons.
+   */
   TaskBar() {
     setLayout(new GridLayout(1, 3));
     setPreferredSize(new Dimension(WIDTH, HEIGHT));
