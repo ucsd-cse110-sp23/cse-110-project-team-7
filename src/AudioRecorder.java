@@ -19,13 +19,9 @@ public class AudioRecorder {
    */
   public AudioRecorder() {
     float sampleRate = 8000;
-
     int sampleSizeInBits = 16;
-
     int channels = 1;
-
     boolean signed = true;
-
     boolean bigEndian = false;
 
     this.format = new AudioFormat(
@@ -43,20 +39,17 @@ public class AudioRecorder {
    * 
    * Source: CSE 110 Lab 5
    */
-  public void startRecording() {
+  public void start(File file) {
     try {
-
       this.targetDataLine = AudioSystem.getTargetDataLine(this.format);
       this.targetDataLine.open(this.format);
       this.targetDataLine.start();
 
       AudioInputStream audioInputStream = new AudioInputStream(this.targetDataLine);
-      File audioFile = new File("question.wav");
 
       Thread audioThread = new Thread(() -> {
         try {
-          AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE,
-              audioFile);
+          AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, file);
         } catch (Exception err) {
           err.printStackTrace();
         }
@@ -65,7 +58,6 @@ public class AudioRecorder {
       audioThread.start();
 
       this.audioThread = audioThread;
-
     } catch (Exception err){
       err.printStackTrace();
     }
@@ -76,7 +68,7 @@ public class AudioRecorder {
    * 
    * Source: CSE 110 Lab 5
    */
-  public void stopRecording() {
+  public void stop() {
     try {
       this.targetDataLine.stop();
       this.targetDataLine.close();

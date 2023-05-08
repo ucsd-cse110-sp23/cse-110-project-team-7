@@ -9,8 +9,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Top-level test runner, verifying general program behavior.
  */
 public class SayItAssistantTest {
+  /* Whisper Tests */
   @Test
-  void testDummy() {
-    assertEquals(0, 0);
+  void testWhisperBadFile() {
+    assertEquals(null, Whisper.speechToText(null));
+  }
+
+  @Test
+  void testWhisperEmptyFile() {
+    File tmp = new File("dummy");
+    assertEquals(null, Whisper.speechToText(tmp));
+  }
+
+  @Test
+  void testWhisperNoToken() {
+    assertEquals(null, Whisper.speechToText(new File("silent.wav")));
   }
 }
