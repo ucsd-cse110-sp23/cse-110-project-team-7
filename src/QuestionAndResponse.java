@@ -46,7 +46,7 @@ class QuestionAndResponse extends JPanel {
    *   match.
    */
   void show(String question, String response) {
-    questionLabel.setText(question);
-    responseLabel.setText(response);
+    questionLabel.setText("<html>" + question + "<html>");
+    responseLabel.setText("<html>" + response + "<html>");
   }
 }
