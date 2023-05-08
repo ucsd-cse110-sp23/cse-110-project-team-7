@@ -17,6 +17,9 @@ class HistoryBar extends JPanel {
   private static final int WIDTH = 200;
   private static final int HEIGHT = 100;
 
+  private static final int BTN_WIDTH = WIDTH - 20;
+  private static final int BTN_HEIGHT = 40;
+
   private Box vbox;
   private JScrollPane scroller;
   private JLabel questionLabel;
@@ -47,6 +50,7 @@ class HistoryBar extends JPanel {
    */
   JButton add(HistoryItem item) {
     JButton out = new JButton(item.question);
+    out.setMaximumSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
     vbox.add(out, 0);
     return out;
   }
