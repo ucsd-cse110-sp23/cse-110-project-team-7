@@ -146,4 +146,37 @@ class SayItAssistantTest {
     s.parse("[{\"timestamp\": 0, \"question\": \"\"}]");
     assertEquals(s.history.size(), 0);
   }
+
+  @Test
+  void testSamePrompts() throws Exception {
+    Storage s = new Storage("[]");
+    s.add("What is 2 + 2?", "4");
+    s.add("What is 2 + 2?", "The answer is 4.");
+    s.add("What is 2 + 2?", "Two plus two equals 4");
+
+    String dest = "same_prompts.json";
+    s.save(dest);
+    File file = new File(dest);
+    assertTrue(file.exists());
+
+    BufferedReader br = new BufferedReader(
+      new FileReader(file)
+    );
+
+    String line, text = "";
+    while ((line = br.readLine()) != null) {
+      text += line;
+    }
+    br.close();
+    file.delete();
+
+    s = new Storage(text);
+    assertEquals(s.history.size(), 3);
+    assertEquals(s.history.get(0).question, "What is 2 + 2?");
+    assertEquals(s.history.get(0).response, "4");
+    assertEquals(s.history.get(1).question, "What is 2 + 2?");
+    assertEquals(s.history.get(1).response, "The answer is 4."); 
+    assertEquals(s.history.get(2).question, "What is 2 + 2?");
+    assertEquals(s.history.get(2).response, "Two plus two equals 4");
+  }
 }
