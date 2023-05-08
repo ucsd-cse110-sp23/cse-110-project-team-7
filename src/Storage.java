@@ -17,10 +17,17 @@ class Storage {
 
   ArrayList<HistoryItem> history = new ArrayList<>();
 
+  /**
+   * Given JSON text, populate the history list.
+   */
   Storage(String text) {
     parse(text);
   }
 
+  /**
+   * Without input text, read the default filename
+   *   and populate the history list.
+   */
   Storage() {
     String text = "";
     try {
@@ -41,6 +48,10 @@ class Storage {
     parse(text);
   }
 
+  /**
+   * Parse the given string as JSON storing timestamp,
+   *   question, and response for each history entry.
+   */
   public void parse(String text) {
     try {
       JSONTokener tok = new JSONTokener(text);
@@ -61,14 +72,27 @@ class Storage {
     }
   }
 
-  public void add(String question, String response) {
-    history.add(new HistoryItem(question, response));
+  /**
+   * Add a new question/response pair to the storage history.
+   */
+  public HistoryItem add(String question, String response) {
+    HistoryItem out = new HistoryItem(question, response);
+    history.add(out);
+    return out;
   }
 
+  /**
+   * Add a new question/response pair to the storage history with
+   *   a particular timestamp, useful for testing.
+   */
   public void add(long timestamp, String question, String response) {
     history.add(new HistoryItem(timestamp, question, response));
   }
 
+  /**
+   * Delete a particular question/response pair from
+   *   history by its UUID.
+   */
   public void delete(UUID id) {
     for (int i = 0; i < history.size(); i++) {
       if (history.get(i).id.compareTo(id) == 0) {
@@ -78,6 +102,9 @@ class Storage {
     }
   }
 
+  /**
+   * Save the current history list as JSON to the given filename.
+   */
   public void save(String filename) {
     JSONArray arr = new JSONArray();
     for (HistoryItem item : history) {
@@ -99,6 +126,9 @@ class Storage {
     }
   }
 
+  /**
+   * Save the current history list as JSON to the default filename.
+   */
   public void save() {
     save(HISTORY_FILE);
   }

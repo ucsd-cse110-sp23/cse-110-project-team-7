@@ -1,2 +1,4 @@
 bin/*.class
 reports
+history.json
+question.wav
