@@ -1,11 +1,15 @@
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import javax.sound.sampled.*;
-import javax.swing.*;
+import java.io.File;
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.TargetDataLine;
 
+/**
+ * A class for handling microphone input, for use with
+ *   OpenAI's Whisper API.
+ */
 public class AudioRecorder {
-    
   private AudioFormat format;
   private TargetDataLine targetDataLine;
   private Thread audioThread;
@@ -24,7 +28,7 @@ public class AudioRecorder {
     boolean signed = true;
     boolean bigEndian = false;
 
-    this.format = new AudioFormat(
+    format = new AudioFormat(
       sampleRate,
       sampleSizeInBits,
       channels,
@@ -41,13 +45,13 @@ public class AudioRecorder {
    */
   public void start(File file) {
     try {
-      this.targetDataLine = AudioSystem.getTargetDataLine(this.format);
-      this.targetDataLine.open(this.format);
-      this.targetDataLine.start();
+      targetDataLine = AudioSystem.getTargetDataLine(format);
+      targetDataLine.open(format);
+      targetDataLine.start();
 
-      AudioInputStream audioInputStream = new AudioInputStream(this.targetDataLine);
+      AudioInputStream audioInputStream = new AudioInputStream(targetDataLine);
 
-      Thread audioThread = new Thread(() -> {
+      audioThread = new Thread(() -> {
         try {
           AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, file);
         } catch (Exception err) {
@@ -56,9 +60,7 @@ public class AudioRecorder {
       });
 
       audioThread.start();
-
-      this.audioThread = audioThread;
-    } catch (Exception err){
+    } catch (Exception err) {
       err.printStackTrace();
     }
   }
@@ -70,10 +72,9 @@ public class AudioRecorder {
    */
   public void stop() {
     try {
-      this.targetDataLine.stop();
-      this.targetDataLine.close();
-      this.audioThread.join();
-      System.out.println("Finished recording");
+      targetDataLine.stop();
+      targetDataLine.close();
+      audioThread.join();
     } catch (Exception err) {
       err.printStackTrace();
     }
