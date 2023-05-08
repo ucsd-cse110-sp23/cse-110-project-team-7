@@ -48,5 +48,6 @@ class QuestionAndResponse extends JPanel {
   void show(String question, String response) {
     questionLabel.setText("<html>" + question + "<html>");
     responseLabel.setText("<html>" + response + "<html>");
+    // "<html>" allows text to wrap in JLabel
   }
 }
