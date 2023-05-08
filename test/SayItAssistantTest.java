@@ -3,7 +3,7 @@ import java.io.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Top-level test runner, verifying general program behavior.
@@ -12,17 +12,28 @@ public class SayItAssistantTest {
   /* Whisper Tests */
   @Test
   void testWhisperBadFile() {
-    assertEquals(null, Whisper.speechToText(null));
+    assertNull(Whisper.speechToText(null));
   }
 
   @Test
   void testWhisperEmptyFile() {
     File tmp = new File("dummy");
-    assertEquals(null, Whisper.speechToText(tmp));
+    assertNull(Whisper.speechToText(tmp));
   }
 
   @Test
   void testWhisperNoToken() {
-    assertEquals(null, Whisper.speechToText(new File("silent.wav")));
+    assertNull(Whisper.speechToText(new File("silent.wav")));
+  }
+
+  /* ChatGPT Tests */
+  @Test
+  void testChatGPTBadQuestion() {
+    assertNull(ChatGPT.ask(null));
+  }
+
+  @Test
+  void testChatGPTNoToken() {
+    assertNull(ChatGPT.ask("What is the smallest country in the world?"));
   }
 }

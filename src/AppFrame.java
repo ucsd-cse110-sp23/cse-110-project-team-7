@@ -1,6 +1,6 @@
-import java.io.File;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import javax.swing.JFrame;
 
 /**
@@ -10,6 +10,10 @@ import javax.swing.JFrame;
 class AppFrame extends JFrame {
   private static final String QUESTION_FILE = "question.wav";
 
+  /*
+   * Individual UI components and the utilities
+   *   class they all interact with
+   */
   private QuestionAndResponse convo;
   private TaskBar taskbar;
   
@@ -21,9 +25,12 @@ class AppFrame extends JFrame {
 
 
   AppFrame() {
-    this.setSize(640, 480);
-    this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    this.setVisible(true);
+    /*
+     * Set basic properties of the window frame
+     */
+    setSize(640, 480);
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    setVisible(true);
 
     convo = new QuestionAndResponse();
     add(convo, BorderLayout.CENTER);
@@ -50,13 +57,21 @@ class AppFrame extends JFrame {
       } else {
         recorder.stop();
 
-        Thread whisperThread = new Thread(() -> {
+        Thread networkThread = new Thread(() -> {
           String question = Whisper.speechToText(stream);
-          System.out.println(question);
-        });
-        whisperThread.start();
+          stream.delete();
+          if (question == null) {
+            return;
+          }
 
-        stream.delete();
+          String response = ChatGPT.ask(question);
+          if (response == null) {
+            return;
+          }
+
+          convo.show(question, response);
+        });
+        networkThread.start();
       }
     });
   }

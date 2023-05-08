@@ -13,30 +13,33 @@ public class Whisper {
 
   /* Source: CSE 110 Lab 4 */
   private static void writeParameterToOutputStream(
-    OutputStream outputStream,
-    String parameterName,
-    String parameterValue,
-    String boundary
+      OutputStream outputStream,
+      String parameterName,
+      String parameterValue,
+      String boundary
   ) {
     try {
       outputStream.write(("--" + boundary + "\r\n").getBytes());
       outputStream.write(
-        ("Content-Disposition: form-data; name=\"" + parameterName + "\"\r\n\r\n").getBytes()
+          ("Content-Disposition: form-data; name=\"" + parameterName + "\"\r\n\r\n").getBytes()
       );
       outputStream.write((parameterValue + "\r\n").getBytes());
-    } catch (Exception e) { }
+    } catch (Exception e) {
+      System.err.println(e.toString());
+    }
   }
 
   /* Source: CSE 110 Lab 4 */
   private static void writeFileToOutputStream(
-    OutputStream outputStream,
-    File file,
-    String boundary
+      OutputStream outputStream,
+      File file,
+      String boundary
   ) {
     try {
       outputStream.write(("--" + boundary + "\r\n").getBytes());
       outputStream.write(
-        ("Content-Disposition: form-data; name=\"file\"; filename=\"" + file.getName() + "\"\r\n").getBytes()
+          ("Content-Disposition: form-data; name=\"file\"; filename=\""
+          + file.getName() + "\"\r\n").getBytes()
       );
       outputStream.write(("Content-Type: audio/mpeg\r\n\r\n").getBytes());
 
@@ -47,14 +50,16 @@ public class Whisper {
         outputStream.write(buffer, 0, bytesRead);
       }
       fileInputStream.close();
-    } catch (Exception e) { }
+    } catch (Exception e) {
+      System.err.println(e.toString());
+    }
   }
 
   /* Source: CSE 110 Lab 4 */
   private static String handleSuccessResponse(HttpURLConnection connection) {
     try {
       BufferedReader in = new BufferedReader(
-        new InputStreamReader(connection.getInputStream())
+          new InputStreamReader(connection.getInputStream())
       );
       String inputLine;
       StringBuilder response = new StringBuilder();
@@ -67,6 +72,7 @@ public class Whisper {
       JSONObject responseJson = new JSONObject(response.toString());
       return responseJson.getString("text");
     } catch (Exception e) {
+      System.err.println(e.toString());
       return null;
     }
   }
@@ -75,7 +81,7 @@ public class Whisper {
   private static String handleErrorResponse(HttpURLConnection connection) {
     try {
       BufferedReader errorReader = new BufferedReader(
-        new InputStreamReader(connection.getErrorStream())
+          new InputStreamReader(connection.getErrorStream())
       );
       String errorLine;
       StringBuilder errorResponse = new StringBuilder();
@@ -88,6 +94,7 @@ public class Whisper {
       System.err.println("Error: " + errorResult);
       return null;
     } catch (Exception e) {
+      System.err.println(e.toString());
       return null;
     }
   }
@@ -100,7 +107,9 @@ public class Whisper {
    */
   public static String speechToText(File file) {
     try {
-      if (!file.exists()) return null;
+      if (!file.exists()) {
+        return null;
+      }
 
       URL url = new URI(API_ENDPOINT).toURL();
       HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -109,8 +118,8 @@ public class Whisper {
 
       String boundary = "Boundary-" + System.currentTimeMillis();
       connection.setRequestProperty(
-        "Content-Type",
-        "multipart/form-data; boundary=" + boundary
+          "Content-Type",
+          "multipart/form-data; boundary=" + boundary
       );
       connection.setRequestProperty("Authorization", "Bearer " + System.getenv("OPENAI_TOKEN"));
 
@@ -130,6 +139,7 @@ public class Whisper {
         return handleErrorResponse(connection);
       }
     } catch (Exception e) {
+      System.err.println(e.toString());
       return null;
     }
   }
