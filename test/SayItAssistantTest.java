@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.ArrayList;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
@@ -145,5 +146,139 @@ class SayItAssistantTest {
 
     s.parse("[{\"timestamp\": 0, \"question\": \"\"}]");
     assertEquals(s.history.size(), 0);
+  }
+
+  @Test
+  void testSamePrompts() throws Exception {
+    Storage s = new Storage("[]");
+    s.add("What is 2 + 2?", "4");
+    s.add("What is 2 + 2?", "The answer is 4.");
+    s.add("What is 2 + 2?", "Two plus two equals 4");
+
+    String dest = "same_prompts.json";
+    s.save(dest);
+    File file = new File(dest);
+    assertTrue(file.exists());
+
+    BufferedReader br = new BufferedReader(
+      new FileReader(file)
+    );
+
+    String line, text = "";
+    while ((line = br.readLine()) != null) {
+      text += line;
+    }
+    br.close();
+    file.delete();
+
+    s = new Storage(text);
+    assertEquals(s.history.size(), 3);
+    assertEquals(s.history.get(0).question, "What is 2 + 2?");
+    assertEquals(s.history.get(0).response, "4");
+    assertEquals(s.history.get(1).question, "What is 2 + 2?");
+    assertEquals(s.history.get(1).response, "The answer is 4."); 
+    assertEquals(s.history.get(2).question, "What is 2 + 2?");
+    assertEquals(s.history.get(2).response, "Two plus two equals 4");
+  }
+
+  /* User Story 2 Tests (BDD Scenarios) */
+  @Test
+  void testStory2_BDD1() throws Exception{
+    Storage s = new Storage("[]");
+    ArrayList<String> questions = new ArrayList<>();
+    questions.add("What is 2 + 2?");
+    questions.add("What is the meaning of life?");
+    questions.add("Is the sky purple?");
+    questions.add("What is your name?");
+    questions.add("What is your favorite color?");
+    ArrayList<String> answers = new ArrayList<>();
+    answers.add("4");
+    answers.add("Life is the condition that distinguishes animals and plants from" +
+    " inorganic matter, including the capacity for growth, reproduction, functional activity, and continual change" + 
+    " preceding death.");
+    answers.add("No");
+    answers.add("Say-It Assistant");
+    answers.add("Green");
+
+    s.add(0, questions.get(0), answers.get(0));
+    s.add(1, questions.get(1), answers.get(1));
+    s.add(2, questions.get(2), answers.get(2));
+    s.add(3, questions.get(3), answers.get(3));
+    s.add(4, questions.get(4), answers.get(4));
+    String dest = "BDD1.json";
+    s.save(dest);
+    File file = new File(dest);
+    BufferedReader br = new BufferedReader(
+      new FileReader(file)
+    );
+    String line, text = "";
+    while ((line = br.readLine()) != null) {
+      text += line;
+    }
+    br.close();
+    file.delete();
+    s = new Storage(text);
+    
+    assertEquals(s.history.size(), 5);
+    assertEquals(s.history.get(0).question, questions.get(0));
+    assertEquals(s.history.get(1).question, questions.get(1));
+    assertEquals(s.history.get(2).question, questions.get(2));
+    assertEquals(s.history.get(3).question, questions.get(3));
+    assertEquals(s.history.get(4).question, questions.get(4));
+
+    assertEquals(s.history.get(0).response, answers.get(0));
+    assertEquals(s.history.get(1).response, answers.get(1));
+    assertEquals(s.history.get(2).response, answers.get(2));
+    assertEquals(s.history.get(3).response, answers.get(3));
+    assertEquals(s.history.get(4).response, answers.get(4));
+  }
+
+
+  @Test
+  void testStory2_BDD2() throws Exception{
+    Storage s = new Storage("[]");
+    String dest = "BDD2.json";
+    s.save(dest);
+    File file = new File(dest);
+
+    BufferedReader br = new BufferedReader(
+      new FileReader(file)
+    );
+
+    String line, text = "";
+    while ((line = br.readLine()) != null) {
+      text += line;
+    }
+    br.close();
+    file.delete();
+    
+    s = new Storage(text);
+    assertEquals(s.history.size(), 0);
+  }
+
+  @Test
+  void testStory2_BDD3() throws Exception{
+    Storage s = new Storage("[]");
+    for (int i = 0; i <= 20; i++) {
+      s.add(i, "What is " + i + " + " + i + "?", "" + (i+i));
+    }
+    String dest = "BDD3.json";
+    s.save(dest);
+    File file = new File(dest);
+    BufferedReader br = new BufferedReader(
+      new FileReader(file)
+    );
+    String line, text = "";
+    while ((line = br.readLine()) != null) {
+      text += line;
+    }
+    br.close();
+    file.delete();
+    s = new Storage(text);
+    assertEquals(s.history.size(), 21);
+    for (int i = 0;  i <= 20; i++) {
+      assertEquals(s.history.get(i).question, "What is " + i + " + " + i + "?");
+      assertEquals(s.history.get(i).response, "" + (i+i));
+    }
   }
 }
