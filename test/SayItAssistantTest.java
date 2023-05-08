@@ -14,15 +14,13 @@ public class SayItAssistantTest {
   /* AudioRecorder tests */
   @Test
   void testAudioRecorder() {
-    try {
-      File file = new File("question.wav");
-      AudioRecorder recorder = new AudioRecorder();
-      recorder.start(file);
-      Thread.sleep(1000);
+    File file = new File("question.wav");
+    AudioRecorder recorder = new AudioRecorder();
+    if (recorder.start(file)) {
       recorder.stop();
       assertTrue(file.exists());
       file.delete();
-    } catch (Exception e) {
+    } else {
       System.out.println("System does not have audio input, skipping test.");
     }
   }
