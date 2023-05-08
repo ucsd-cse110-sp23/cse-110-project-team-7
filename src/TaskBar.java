@@ -3,7 +3,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
@@ -11,16 +10,16 @@ import javax.swing.JPanel;
  * Taskbar UI component with three buttons.
  */
 class TaskBar extends JPanel {
-  private JButton deleteQuestionButton;
-  private JButton newQuestionButton;
-  private JButton clearAllButton;
-  public AudioRecorder audioRecorder;
-
-  private boolean recording = false;
+  public JButton deleteQuestionButton;
+  public JButton newQuestionButton;
+  public JButton clearAllButton;
 
   Color lightGray = new Color(217, 217, 217);
   Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 10);
 
+  /**
+   * Instantiate a new GridLayout with 3 equally-spaced buttons.
+   */
   TaskBar() {
     this.setLayout(new GridLayout(1, 3));
     this.setPreferredSize(new Dimension(640, 80));
@@ -33,17 +32,6 @@ class TaskBar extends JPanel {
     newQuestionButton = new JButton("New Question");
     newQuestionButton.setFont(font);
     add(newQuestionButton, BorderLayout.CENTER);
-    this.audioRecorder = new AudioRecorder();
-
-    newQuestionButton.addActionListener((ActionEvent e) -> {
-      recording = !recording;
-      newQuestionButton.setText(recording ? "Stop Recording" : "New Question");
-      if (recording) {
-        audioRecorder.startRecording();
-      } else {
-        audioRecorder.stopRecording();
-      }
-    });
 
     clearAllButton = new JButton("Clear All");
     clearAllButton.setFont(font);

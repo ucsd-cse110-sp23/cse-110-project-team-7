@@ -1,11 +1,15 @@
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import javax.sound.sampled.*;
-import javax.swing.*;
+import java.io.File;
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.TargetDataLine;
 
+/**
+ * A class for handling microphone input, for use with
+ *   OpenAI's Whisper API.
+ */
 public class AudioRecorder {
-    
   private AudioFormat format;
   private TargetDataLine targetDataLine;
   private Thread audioThread;
@@ -19,16 +23,12 @@ public class AudioRecorder {
    */
   public AudioRecorder() {
     float sampleRate = 8000;
-
     int sampleSizeInBits = 16;
-
     int channels = 1;
-
     boolean signed = true;
-
     boolean bigEndian = false;
 
-    this.format = new AudioFormat(
+    format = new AudioFormat(
       sampleRate,
       sampleSizeInBits,
       channels,
@@ -43,30 +43,24 @@ public class AudioRecorder {
    * 
    * Source: CSE 110 Lab 5
    */
-  public void startRecording() {
+  public void start(File file) {
     try {
+      targetDataLine = AudioSystem.getTargetDataLine(format);
+      targetDataLine.open(format);
+      targetDataLine.start();
 
-      this.targetDataLine = AudioSystem.getTargetDataLine(this.format);
-      this.targetDataLine.open(this.format);
-      this.targetDataLine.start();
+      AudioInputStream audioInputStream = new AudioInputStream(targetDataLine);
 
-      AudioInputStream audioInputStream = new AudioInputStream(this.targetDataLine);
-      File audioFile = new File("question.wav");
-
-      Thread audioThread = new Thread(() -> {
+      audioThread = new Thread(() -> {
         try {
-          AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE,
-              audioFile);
+          AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, file);
         } catch (Exception err) {
           err.printStackTrace();
         }
       });
 
       audioThread.start();
-
-      this.audioThread = audioThread;
-
-    } catch (Exception err){
+    } catch (Exception err) {
       err.printStackTrace();
     }
   }
@@ -76,12 +70,11 @@ public class AudioRecorder {
    * 
    * Source: CSE 110 Lab 5
    */
-  public void stopRecording() {
+  public void stop() {
     try {
-      this.targetDataLine.stop();
-      this.targetDataLine.close();
-      this.audioThread.join();
-      System.out.println("Finished recording");
+      targetDataLine.stop();
+      targetDataLine.close();
+      audioThread.join();
     } catch (Exception err) {
       err.printStackTrace();
     }

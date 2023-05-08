@@ -17,10 +17,14 @@ class QuestionAndResponse extends JPanel {
   Color darkGray = new Color(59, 59, 59);
   Font font = new Font(Font.SANS_SERIF, Font.BOLD, 14);
 
+  /**
+   * Instantiate a grid layout with two labels in opposite
+   *   corners from each other.
+   */
   QuestionAndResponse() {
-    this.setLayout(new GridLayout(2, 2));
-    this.setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
-    this.setBackground(darkGray);
+    setLayout(new GridLayout(2, 2));
+    setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
+    setBackground(darkGray);
 
     questionLabel = new JLabel("Question here...");
     questionLabel.setPreferredSize(new Dimension(200, 60));
@@ -35,5 +39,14 @@ class QuestionAndResponse extends JPanel {
     responseLabel.setHorizontalAlignment(JLabel.LEFT);
     responseLabel.setForeground(Color.WHITE);
     add(responseLabel, BorderLayout.LINE_START);
+  }
+
+  /**
+   * Given a question/response pair, update the UI to
+   *   match.
+   */
+  void show(String question, String response) {
+    questionLabel.setText(question);
+    responseLabel.setText(response);
   }
 }
