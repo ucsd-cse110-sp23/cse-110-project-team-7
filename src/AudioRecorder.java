@@ -43,7 +43,7 @@ public class AudioRecorder {
    * 
    * Source: CSE 110 Lab 5
    */
-  public void start(File file) {
+  public boolean start(File file) {
     try {
       targetDataLine = AudioSystem.getTargetDataLine(format);
       targetDataLine.open(format);
@@ -60,8 +60,10 @@ public class AudioRecorder {
       });
 
       audioThread.start();
+      return true;
     } catch (Exception err) {
       err.printStackTrace();
+      return false;
     }
   }
 
