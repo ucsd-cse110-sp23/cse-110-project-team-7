@@ -1,13 +1,19 @@
 all: bin/SayItAssistant.class
 
-bin/SayItAssistant.class: src/SayItAssistant.java
-	javac -cp lib/*:bin -d bin src/SayItAssistant.java
+bin/SayItAssistant.class: src/*.java
+	javac -cp lib/*:bin -d bin src/*.java
 
 run: bin/SayItAssistant.class
 	java -cp lib/*:bin SayItAssistant
 
-test: bin/SayItAssistant.class
-	@echo Not yet implemented
+bin/SayItAssistantTest.class: bin/SayItAssistant.class test/*.java
+	javac -cp lib/*:bin -d bin test/*.java
+
+test: bin/SayItAssistantTest.class
+	java -cp lib/*:bin org.junit.platform.console.ConsoleLauncher -c SayItAssistantTest --reports-dir=reports
+
+check:
+	java -jar lib/checkstyle-10.10.0-all.jar -c checkstyle.xml src/*
 
 clean:
-	rm -f bin/SayItAssistant.class
+	rm -f bin/*
