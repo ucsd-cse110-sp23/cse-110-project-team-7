@@ -33,6 +33,7 @@ jobs:
         uses: mikepenz/action-junit-report@v3
         if: success() || failure() # always run even if the previous step fails
         with:
-          report_paths: '**/reports/TEST-*.xml'
+          report_paths: 'reports/TEST-junit-jupiter.xml'
           detailed_summary: true # display detailed summary of the report
           include_passed: true # include passed tests in the results table
+          annotate_notice: true # annotate passed tests as well as failed ones
