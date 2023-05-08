@@ -13,7 +13,7 @@ $ make
 To start the application, run:
 
 ```
-$ make run
+$ OPENAI_TOKEN="[your OpenAI token]" make run
 ```
 
 ## Testing and Linting

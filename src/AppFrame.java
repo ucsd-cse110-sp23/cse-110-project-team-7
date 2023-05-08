@@ -1,6 +1,7 @@
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 
 /**
@@ -8,29 +9,42 @@ import javax.swing.JFrame;
  *   and a taskbar.
  */
 class AppFrame extends JFrame {
+  private static final int WIDTH = 640;
+  private static final int HEIGHT = 480;
   private static final String QUESTION_FILE = "question.wav";
 
   /*
-   * Individual UI components and the utilities
+   * Individual UI components and the storage
    *   class they all interact with
    */
+  private Storage storage = new Storage();
+  private AudioRecorder recorder = new AudioRecorder();
+  private File stream = new File(QUESTION_FILE);
+
+  private HistoryBar hist;
   private QuestionAndResponse convo;
   private TaskBar taskbar;
-  
-  private AudioRecorder recorder;
-  private File stream;
 
   /* Whether the user is currently recording audio */
   private boolean recording = false;
-
 
   AppFrame() {
     /*
      * Set basic properties of the window frame
      */
-    setSize(640, 480);
+    setSize(WIDTH, HEIGHT);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setVisible(true);
+
+    /*
+     * Instantiate each individual component,
+     *   populating with history where applicable
+     */
+    hist = new HistoryBar();
+    for (HistoryItem item : storage.history) {
+      displayItem(item);
+    }
+    add(hist, BorderLayout.WEST);
 
     convo = new QuestionAndResponse();
     add(convo, BorderLayout.CENTER);
@@ -38,8 +52,25 @@ class AppFrame extends JFrame {
     taskbar = new TaskBar();
     add(taskbar, BorderLayout.SOUTH);
 
-    recorder = new AudioRecorder();
+    /*
+     * Attach event listeners and save the user's
+     *   history on program shutdown
+     */
     addListeners();
+    Runtime.getRuntime().addShutdownHook(
+      new Thread(() -> storage.save())
+    );
+  }
+
+  /**
+   * Update the UI to show a given question/response
+   *   combination.
+   */
+  void displayItem(HistoryItem item) {
+    JButton button = hist.add(item);
+    button.addActionListener((ActionEvent e) -> {
+      convo.show(item);
+    });
   }
 
   /**
@@ -52,12 +83,12 @@ class AppFrame extends JFrame {
       taskbar.newQuestionButton.setText(recording ? "Stop Recording" : "New Question");
 
       if (recording) {
-        stream = new File(QUESTION_FILE);
         recorder.start(stream);
       } else {
         recorder.stop();
 
         Thread networkThread = new Thread(() -> {
+            /*
           String question = Whisper.speechToText(stream);
           stream.delete();
           if (question == null) {
@@ -69,7 +100,11 @@ class AppFrame extends JFrame {
             return;
           }
 
-          convo.show(question, response);
+          HistoryItem item = storage.add(question, response);
+          */
+          HistoryItem item = storage.add("this is a very long question that keeps going and going and going on and going on", "this is a long response that keeps going on and on and it just keeps going oh my god it's so long");
+          displayItem(item);
+          convo.show(item);
         });
         networkThread.start();
       }
