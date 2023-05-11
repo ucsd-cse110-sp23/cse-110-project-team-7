@@ -103,6 +103,13 @@ class Storage {
   }
 
   /**
+   * Clears all inputs
+   */
+  public void clear() {
+    this.history.clear();
+  }
+
+  /**
    * Save the current history list as JSON to the given filename.
    */
   public void save(String filename) {
