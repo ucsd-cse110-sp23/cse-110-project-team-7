@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -103,13 +104,14 @@ class SayItAssistantTest {
   @Test
   void testStorageDelete() {
     Storage s = new Storage("[]");
-    s.delete(null);
+    String no_uuid = null;
+    assertFalse(s.delete(no_uuid));
     assertEquals(s.history.size(), 0);
 
     s.add("question", "response");
     s.add("question", "response");
     s.add("question", "response");
-    s.delete(s.history.get(0).id);
+    assertTrue(s.delete(s.history.get(0).id));
     assertEquals(s.history.size(), 2);
   }
 
@@ -149,7 +151,7 @@ class SayItAssistantTest {
   }
 
   @Test
-  void testSamePrompts() throws Exception {
+  void testStorageSameQuestion() throws Exception {
     Storage s = new Storage("[]");
     s.add("What is 2 + 2?", "4");
     s.add("What is 2 + 2?", "The answer is 4.");
@@ -179,6 +181,17 @@ class SayItAssistantTest {
     assertEquals(s.history.get(1).response, "The answer is 4."); 
     assertEquals(s.history.get(2).question, "What is 2 + 2?");
     assertEquals(s.history.get(2).response, "Two plus two equals 4");
+  }
+
+  @Test
+  void testStorageSerialize() {
+    final String dummy_uuid = "123e4567-e89b-42d3-a456-556642440000";
+
+    Storage s = new Storage("[]");
+    assertEquals("[]", s.serialize());
+
+    s.add(dummy_uuid, 0, "hello", "world");
+    assertEquals("[{\"question\":\"hello\",\"response\":\"world\",\"uuid\":\"" + dummy_uuid + "\",\"timestamp\":0}]", s.serialize());
   }
 
   /* User Story 2 Tests (BDD Scenarios) */
