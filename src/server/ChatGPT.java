@@ -18,7 +18,6 @@ class ChatGPT {
   /**
    * Ask ChatGPT a question via a POST request
    *   to its API endpoint.
-   *
    * Source: CSE 110 Lab 4
    */
   public static String ask(String question) {

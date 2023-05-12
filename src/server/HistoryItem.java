@@ -29,4 +29,18 @@ class HistoryItem {
     this(q, r);
     timestamp = t;
   }
+
+  /**
+   * Instantiate a new item as above, but with a
+   *   manually-specified UUID instead of a random one.
+   */
+  HistoryItem(String i, long t, String q, String r) {
+    this(t, q, r);
+
+    try {
+      id = UUID.fromString(i);
+    } catch (Exception e) {
+      id = UUID.randomUUID();
+    }
+  }
 }
