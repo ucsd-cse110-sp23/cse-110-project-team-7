@@ -88,7 +88,6 @@ class AppFrame extends JFrame {
         recorder.stop();
 
         Thread networkThread = new Thread(() -> {
-            /*
           String question = Whisper.speechToText(stream);
           stream.delete();
           if (question == null) {
@@ -101,8 +100,6 @@ class AppFrame extends JFrame {
           }
 
           HistoryItem item = storage.add(question, response);
-          */
-          HistoryItem item = storage.add("this is a very long question that keeps going and going and going on and going on", "this is a long response that keeps going on and on and it just keeps going oh my god it's so long");
           displayItem(item);
           convo.show(item);
         });
