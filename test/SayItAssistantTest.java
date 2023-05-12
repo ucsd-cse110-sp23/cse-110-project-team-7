@@ -1,10 +1,12 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -149,7 +151,7 @@ class SayItAssistantTest {
   }
 
   @Test
-  void testSamePrompts() throws Exception {
+  void testStorageSameQuestion() throws Exception {
     Storage s = new Storage("[]");
     s.add("What is 2 + 2?", "4");
     s.add("What is 2 + 2?", "The answer is 4.");
@@ -183,7 +185,7 @@ class SayItAssistantTest {
 
   /* User Story 2 Tests (BDD Scenarios) */
   @Test
-  void testStory2_BDD1() throws Exception{
+  void testStory2_BDD1() throws Exception {
     Storage s = new Storage("[]");
     ArrayList<String> questions = new ArrayList<>();
     questions.add("What is 2 + 2?");
@@ -235,7 +237,7 @@ class SayItAssistantTest {
 
 
   @Test
-  void testStory2_BDD2() throws Exception{
+  void testStory2_BDD2() throws Exception {
     Storage s = new Storage("[]");
     String dest = "BDD2.json";
     s.save(dest);
@@ -257,7 +259,7 @@ class SayItAssistantTest {
   }
 
   @Test
-  void testStory2_BDD3() throws Exception{
+  void testStory2_BDD3() throws Exception {
     Storage s = new Storage("[]");
     for (int i = 0; i <= 20; i++) {
       s.add(i, "What is " + i + " + " + i + "?", "" + (i+i));
@@ -280,5 +282,44 @@ class SayItAssistantTest {
       assertEquals(s.history.get(i).question, "What is " + i + " + " + i + "?");
       assertEquals(s.history.get(i).response, "" + (i+i));
     }
+  }
+  
+  /* PromptHandler Tests */
+  @Test
+  void testHandlerGet() {
+    Storage storage = new Storage("[]");
+    HistoryItem twoPlusTwo = storage.add("What is 2 plus 2?", "4");
+
+    PromptHandler handler = new PromptHandler(storage);
+
+    // Query all
+    assertNotNull(handler.handleGet(null));
+
+    // Query one that does not exist
+    assertNull(handler.handleGet(UUID.randomUUID().toString()));
+
+    // Query one that does exist
+    assertEquals("4", handler.handleGet(twoPlusTwo.id.toString()));
+
+    // Delete from storage, then confirm question no longer exists
+    storage.delete(twoPlusTwo.id);
+    assertNull(handler.handleGet(twoPlusTwo.id.toString()));
+    assertEquals("[]", handler.handleGet(null));
+  }
+
+  @Test
+  void testHandlerDelete() {
+    Storage storage = new Storage("[]");
+    PromptHandler handler = new PromptHandler(storage);
+
+    // Delete non-existent item(s)
+    assertNull(handler.handleDelete(UUID.randomUUID().toString()));
+
+    // Delete all items
+    assertEquals("Successfully deleted.", handler.handleDelete(null));
+
+    // Delete existing item
+    HistoryItem item = storage.add("hello", "world");
+    assertEquals("Successfully deleted.", handler.handleDelete(item.id.toString()));
   }
 }

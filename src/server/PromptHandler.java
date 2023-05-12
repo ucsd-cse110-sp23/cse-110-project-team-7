@@ -67,7 +67,7 @@ class PromptHandler implements HttpHandler {
     outStream.close();
   }
 
-  private String handleGet(String query) {
+  String handleGet(String query) {
     if (query != null) {
       HistoryItem item = storage.get(UUID.fromString(query));
       if (item == null) {
@@ -79,7 +79,7 @@ class PromptHandler implements HttpHandler {
     return storage.serialize();
   }
 
-  private String handlePost(String query, HttpExchange t) {
+  String handlePost(String query, HttpExchange t) {
     try {
       FileOutputStream out = new FileOutputStream(QUESTION_FILE);
       InputStream ios = t.getRequestBody();
@@ -108,7 +108,7 @@ class PromptHandler implements HttpHandler {
     }
   }
 
-  private String handleDelete(String query) {
+  String handleDelete(String query) {
     if (query != null) {
       if (!storage.delete(UUID.fromString(query))) {
         return null;
