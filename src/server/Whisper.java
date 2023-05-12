@@ -1,6 +1,12 @@
-import java.io.*;
-import java.net.*;
-import org.json.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
+import org.json.JSONObject;
 
 /**
  * A class with static methods designed to interact
@@ -102,7 +108,6 @@ public class Whisper {
   /**
    * Given an input file, invoke the OpenAI Whisper API for
    *   speech-to-text conversion.
-   *
    * Source: CSE 110 Lab 4
    */
   public static String speechToText(File file) {
