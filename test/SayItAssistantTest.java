@@ -407,7 +407,7 @@ class SayItAssistantTest {
   }
 
   @Test
-  void testStory8_BDD4() {
+  void testStory7_BDD4() {
     IBackendClient client = new MockBackendClient();
     assertTrue(client.clearHistory());
   }
