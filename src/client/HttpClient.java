@@ -1,7 +1,7 @@
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.OutputStreamWriter;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
@@ -9,8 +9,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.UUID;
-import org.json.JSONTokener;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 /**
  * A class for communicating with the application's
@@ -19,6 +19,9 @@ import org.json.JSONObject;
 class HttpClient {
   private static final String API_ENDPOINT = "http://localhost:8080/prompt";
 
+  /**
+   * Fetch all past questions and responses via a GET request.
+   */
   static ArrayList<HistoryItem> getHistory() {
     Storage s = new Storage("[]");
     String history = finishRequest(initRequest(API_ENDPOINT, "GET"));
@@ -29,11 +32,15 @@ class HttpClient {
     return s.history;
   }
 
+  /**
+   * Ask a new question by POSTing a File with voice data.
+   */
   static HistoryItem askQuestion(File stream) {
     try {
-      byte[] data = Files.readAllBytes(stream.toPath());
       HttpURLConnection conn = initRequest(API_ENDPOINT, "POST");
-      String json = finishRequest(conn, new String(data, StandardCharsets.UTF_8));
+      OutputStream out = conn.getOutputStream();
+      Files.copy(stream.toPath(), out);
+      String json = finishRequest(conn);
 
       JSONTokener tok = new JSONTokener(json);
       JSONObject obj = new JSONObject(tok);
@@ -48,6 +55,10 @@ class HttpClient {
     }
   }
 
+  /**
+   * Helper method for deleting something, whether it be
+   *   a specific question or all past questions/responses.
+   */
   private static boolean delete(String addendum) {
     try {
       String res = finishRequest(initRequest(API_ENDPOINT + addendum, "DELETE"));
@@ -57,6 +68,9 @@ class HttpClient {
     }
   }
 
+  /**
+   * Delete a single question based on its UUID.
+   */
   static boolean deleteQuestion(UUID id) {
     if (id == null) {
       return false;
@@ -64,10 +78,16 @@ class HttpClient {
     return delete("/" + id.toString());
   }
 
+  /**
+   * Clear the entire question/response history.
+   */
   static boolean clearHistory() {
     return delete("");
   }
 
+  /**
+   * Helper method for initializing a network request.
+   */
   private static HttpURLConnection initRequest(String endpoint, String method) {
     try {
       URL url = new URI(endpoint).toURL();
@@ -80,22 +100,13 @@ class HttpClient {
     }
   }
 
-  private static String finishRequest(HttpURLConnection conn, String data) {
-    try {
-      OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
-      out.write(data, 0, data.length());
-      out.flush();
-      out.close();
-      return finishRequest(conn);
-    } catch (Exception e) {
-      return null;
-    }
-  }
-
+  /**
+   * Helper method for finalizing a network request.
+   */
   private static String finishRequest(HttpURLConnection conn) {
     try {
       BufferedReader in = new BufferedReader(
-        new InputStreamReader(conn.getInputStream())
+          new InputStreamReader(conn.getInputStream())
       );
       String response = in.readLine();
       in.close();

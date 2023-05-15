@@ -68,6 +68,11 @@ class PromptHandler implements HttpHandler {
     outStream.close();
   }
 
+  /**
+   * When a GET request is made, retrieve the specific ID
+   *   given or all past questions/responses if none is
+   *   present.
+   */
   String handleGet(String query) {
     if (query != null) {
       HistoryItem item = storage.get(UUID.fromString(query));
@@ -80,6 +85,10 @@ class PromptHandler implements HttpHandler {
     return storage.serialize();
   }
 
+  /**
+   * When a POST request is made, retrieve the given file
+   *   and perform Whisper/ChatGPT operations.
+   */
   String handlePost(String query, HttpExchange t) {
     try {
       FileOutputStream out = new FileOutputStream(QUESTION_FILE);
@@ -115,6 +124,10 @@ class PromptHandler implements HttpHandler {
     }
   }
 
+  /**
+   * When a DELETE request is made, delete the appropriate
+   *   history item (or all, if one was not given).
+   */
   String handleDelete(String query) {
     if (query != null) {
       if (!storage.delete(UUID.fromString(query))) {
