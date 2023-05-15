@@ -6,7 +6,9 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
+import javax.swing.JTextPane;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 
 /**
  * Text region UI component that displays a question and its response.
@@ -15,22 +17,18 @@ class QuestionAndResponse extends JPanel {
   private static final int WIDTH = 200;
   private static final int HEIGHT = 60;
 
-  private JTextArea questionArea;
-  private JTextArea responseArea;
+  private JTextPane questionArea;
+  private JTextPane responseArea;
 
   Color darkGray = new Color(59, 59, 59);
-  Font font = new Font(Font.SANS_SERIF, Font.BOLD, 14);
 
   /**
    * Set common properties between text areas, to reduce
    *   duplicated code.
    */
-  private void setTextProps(JTextArea area) {
+  private void setTextProps(JTextPane area) {
     area.setEditable(false);
-    area.setLineWrap(true);
-    area.setWrapStyleWord(true);
     area.setPreferredSize(new Dimension(WIDTH, HEIGHT));
-    area.setFont(font);
     area.setBackground(darkGray);
     area.setForeground(Color.WHITE);
   }
@@ -44,12 +42,17 @@ class QuestionAndResponse extends JPanel {
     setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
     setBackground(darkGray);
 
-    questionArea = new JTextArea();
-    questionArea.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+    // Special alignment rules for question area
+    SimpleAttributeSet attribs = new SimpleAttributeSet();
+    StyleConstants.setAlignment(attribs, StyleConstants.ALIGN_RIGHT);
+    StyleConstants.setForeground(attribs, Color.WHITE);
+
+    questionArea = new JTextPane();
+    questionArea.setParagraphAttributes(attribs, true);
     setTextProps(questionArea);
     add(questionArea, BorderLayout.LINE_END);
 
-    responseArea = new JTextArea();
+    responseArea = new JTextPane();
     setTextProps(responseArea);
     add(responseArea, BorderLayout.LINE_START);
   }
@@ -59,7 +62,12 @@ class QuestionAndResponse extends JPanel {
    *   match.
    */
   void show(HistoryItem item) {
-    questionArea.setText(item.question);
-    responseArea.setText(item.response);
+    if (item != null) {
+      questionArea.setText(item.question);
+      responseArea.setText(item.response);
+    } else {
+      questionArea.setText("");
+      responseArea.setText("");
+    }
   }
 }
