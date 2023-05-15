@@ -124,13 +124,6 @@ class Storage {
   }
 
   /**
-   * Clears all inputs
-   */
-  public void clear() {
-    this.history.clear();
-  }
-
-  /**
    * Delete a particular question/response pair from
    *   history by its UUID.
    */
