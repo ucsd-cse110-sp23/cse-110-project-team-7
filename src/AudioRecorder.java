@@ -18,7 +18,6 @@ public class AudioRecorder {
    * The constructor generates the audio
    * format used for constructing the wav
    * file.
-   * 
    * Source: CSE 110 Lab 5
    */
   public AudioRecorder() {
@@ -40,7 +39,6 @@ public class AudioRecorder {
   /**
    * This method creates an audio file of 
    * user's input. 
-   * 
    * Source: CSE 110 Lab 5
    */
   public boolean start(File file) {
@@ -69,7 +67,6 @@ public class AudioRecorder {
 
   /**
    * This method stops the thread that runs the recording.
-   * 
    * Source: CSE 110 Lab 5
    */
   public void stop() {
