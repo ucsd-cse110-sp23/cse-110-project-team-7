@@ -15,8 +15,8 @@ class QuestionAndResponse extends JPanel {
   private static final int WIDTH = 200;
   private static final int HEIGHT = 60;
 
-  private JTextArea questionLabel;
-  private JTextArea responseLabel;
+  private JTextArea questionArea;
+  private JTextArea responseArea;
 
   Color darkGray = new Color(59, 59, 59);
   Font font = new Font(Font.SANS_SERIF, Font.BOLD, 14);
