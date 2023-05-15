@@ -59,13 +59,14 @@ class Storage {
 
       for (int i = 0; i < arr.length(); i++) {
         JSONObject entry = arr.getJSONObject(i);
+        String id = entry.getString("uuid");
         long timestamp = entry.getLong("timestamp");
         String question = entry.getString("question");
         String response = entry.getString("response");
         if (question == null || response == null) {
           throw new IllegalArgumentException("Malformed input");
         }
-        add(timestamp, question, response);
+        add(id, timestamp, question, response);
       }
     } catch (Exception e) {
       System.err.println("Error: History file is malformed.");
@@ -90,15 +91,35 @@ class Storage {
   }
 
   /**
-   * Delete a particular question/response pair from
-   *   history by its UUID.
+   * Add a new question/response pair to the storage history with
+   *   a particular timestamp and ID, useful for deserialization.
    */
-  public void delete(UUID id) {
+  public void add(String uuid, long timestamp, String question, String response) {
+    history.add(new HistoryItem(uuid, timestamp, question, response));
+  }
+
+  /**
+   * Gets an item in the history storage by its unique ID.
+   */
+  public HistoryItem get(UUID id) {
     for (int i = 0; i < history.size(); i++) {
-      if (history.get(i).id.compareTo(id) == 0) {
-        history.remove(i);
-        return;
+      HistoryItem item = history.get(i);
+      if (item.id.compareTo(id) == 0) {
+        return item;
       }
+    }
+    return null;
+  }
+
+  /**
+   * Gets an item in the history storage by a String
+   *   representation of its unique ID.
+   */
+  public HistoryItem get(String id) {
+    try {
+      return get(UUID.fromString(id));
+    } catch (Exception e) {
+      return null;
     }
   }
 
@@ -110,9 +131,44 @@ class Storage {
   }
 
   /**
-   * Save the current history list as JSON to the given filename.
+   * Delete a particular question/response pair from
+   *   history by its UUID.
    */
-  public void save(String filename) {
+  public boolean delete(UUID id) {
+    for (int i = 0; i < history.size(); i++) {
+      if (history.get(i).id.compareTo(id) == 0) {
+        history.remove(i);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Delete a particular question/response pair from
+   *   history by a String representation of its UUID.
+   */
+  public boolean delete(String id) {
+    try {
+      return delete(UUID.fromString(id));
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  /**
+   * Delete all question/response pairs from the
+   *   history.
+   */
+  public void clear() {
+    history.clear();
+  }
+
+  /**
+   * Serialize the current list of question/response pairs
+   *   into a JSON string.
+   */
+  public String serialize() {
     JSONArray arr = new JSONArray();
     for (HistoryItem item : history) {
       JSONObject tmp = new JSONObject();
@@ -123,10 +179,16 @@ class Storage {
 
       arr.put(tmp);
     }
+    return arr.toString();
+  }
 
+  /**
+   * Save the current history list as JSON to the given filename.
+   */
+  public void save(String filename) {
     try {
       FileWriter fw = new FileWriter(filename);
-      fw.write(arr.toString());
+      fw.write(serialize());
       fw.close();
     } catch (Exception e) {
       System.err.println("Error: Failed to write to history file.");
