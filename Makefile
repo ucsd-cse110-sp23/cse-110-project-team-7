@@ -12,6 +12,10 @@ server: bin/SayItAssistantServer.class
 client: bin/SayItAssistantClient.class
 	java -cp lib/*:bin SayItAssistantClient
 
+demo: bin/SayItAssistantServer.class bin/SayItAssistantClient.class
+	OPENAI_TOKEN="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" java -cp lib/*:bin SayItAssistantServer &
+	java -cp lib/*:bin SayItAssistantClient
+
 bin/SayItAssistantTest.class: bin/SayItAssistantServer.class bin/SayItAssistantClient.class test/*.java
 	javac -cp lib/*:bin -d bin test/*.java
 
