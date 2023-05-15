@@ -23,6 +23,7 @@ class AppFrame extends JFrame {
    */
   private AudioRecorder recorder = new AudioRecorder();
   private File stream = new File(QUESTION_FILE);
+  private IBackendClient client;
 
   private HistoryBar hist;
   private QuestionAndResponse convo;
@@ -37,7 +38,7 @@ class AppFrame extends JFrame {
   /* Whether the user is currently recording audio */
   private boolean recording = false;
 
-  AppFrame() {
+  AppFrame(IBackendClient inClient) {
     /*
      * Set basic properties of the window frame
      */
@@ -46,13 +47,18 @@ class AppFrame extends JFrame {
     setVisible(true);
 
     /*
+     * Set backend client handler
+     */
+    client = inClient;
+
+    /*
      * Instantiate each individual component,
      *   populating with history where applicable
      */
     hist = new HistoryBar();
-    ArrayList<HistoryItem> items = HttpClient.getHistory();
+    ArrayList<HistoryItem> items = client.getHistory();
     if (items != null) {
-      for (HistoryItem item : HttpClient.getHistory()) {
+      for (HistoryItem item : client.getHistory()) {
         displayItem(item);
       }
     }
@@ -91,10 +97,13 @@ class AppFrame extends JFrame {
   /**
    * Attach event listeners to all interactive parts
    *   of the UI that depend upon one another.
+   * This is an example of the Observer pattern:
+   *   We register several lambda functions that each
+   *   respective subject calls when it updates.
    */
   void addListeners() {
     taskbar.deleteQuestionButton.addActionListener((ActionEvent e) -> {
-      if (selected == null || !HttpClient.deleteQuestion(selected.id)) {
+      if (selected == null || !client.deleteQuestion(selected.id)) {
         return;
       }
 
@@ -118,7 +127,7 @@ class AppFrame extends JFrame {
         recorder.stop();
 
         Thread networkThread = new Thread(() -> {
-          HistoryItem item = HttpClient.askQuestion(stream);
+          HistoryItem item = client.askQuestion(stream);
           displayItem(item);
           convo.show(item);
           selected = item;
@@ -127,7 +136,7 @@ class AppFrame extends JFrame {
       }
     });
     taskbar.clearAllButton.addActionListener((ActionEvent e) -> {
-      if (!HttpClient.clearHistory()) {
+      if (!client.clearHistory()) {
         return;
       }
 

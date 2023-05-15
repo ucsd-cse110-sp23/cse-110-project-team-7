@@ -15,14 +15,21 @@ import org.json.JSONTokener;
 /**
  * A class for communicating with the application's
  *   REST API backend.
+ * This is an example of the Adapter and Strategy
+ *   patterns:
+ * - Adapter: The frontend and backend are both written,
+ *     this code links them together with minimal changes.
+ * - Strategy: This class can be easily swapped for any
+ *     other class implementing the IBackendClient interface
+ *     (e.g. MockBackendClient for testing).
  */
-class HttpClient {
+class HttpBackendClient implements IBackendClient {
   private static final String API_ENDPOINT = "http://localhost:8080/prompt";
 
   /**
    * Fetch all past questions and responses via a GET request.
    */
-  static ArrayList<HistoryItem> getHistory() {
+  public ArrayList<HistoryItem> getHistory() {
     Storage s = new Storage("[]");
     String history = finishRequest(initRequest(API_ENDPOINT, "GET"));
     if (history == null) {
@@ -35,7 +42,7 @@ class HttpClient {
   /**
    * Ask a new question by POSTing a File with voice data.
    */
-  static HistoryItem askQuestion(File stream) {
+  public HistoryItem askQuestion(File stream) {
     try {
       HttpURLConnection conn = initRequest(API_ENDPOINT, "POST");
       OutputStream out = conn.getOutputStream();
@@ -59,7 +66,7 @@ class HttpClient {
    * Helper method for deleting something, whether it be
    *   a specific question or all past questions/responses.
    */
-  private static boolean delete(String addendum) {
+  private boolean delete(String addendum) {
     try {
       String res = finishRequest(initRequest(API_ENDPOINT + addendum, "DELETE"));
       return res.equals("Successfully deleted.");
@@ -71,7 +78,7 @@ class HttpClient {
   /**
    * Delete a single question based on its UUID.
    */
-  static boolean deleteQuestion(UUID id) {
+  public boolean deleteQuestion(UUID id) {
     if (id == null) {
       return false;
     }
@@ -81,14 +88,14 @@ class HttpClient {
   /**
    * Clear the entire question/response history.
    */
-  static boolean clearHistory() {
+  public boolean clearHistory() {
     return delete("");
   }
 
   /**
    * Helper method for initializing a network request.
    */
-  private static HttpURLConnection initRequest(String endpoint, String method) {
+  private HttpURLConnection initRequest(String endpoint, String method) {
     try {
       URL url = new URI(endpoint).toURL();
       HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -103,7 +110,7 @@ class HttpClient {
   /**
    * Helper method for finalizing a network request.
    */
-  private static String finishRequest(HttpURLConnection conn) {
+  private String finishRequest(HttpURLConnection conn) {
     try {
       BufferedReader in = new BufferedReader(
           new InputStreamReader(conn.getInputStream())

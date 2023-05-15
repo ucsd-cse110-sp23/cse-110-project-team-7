@@ -340,23 +340,75 @@ class SayItAssistantTest {
   /* HttpClient Tests */
   @Test
   void testHttpClientGet() {
+    IBackendClient concreteClient = new HttpBackendClient();
+    IBackendClient mockClient = new MockBackendClient();
+
     // Should fail gracefully if server is not running
-    assertNull(HttpClient.getHistory());
+    assertNull(concreteClient.getHistory());
+
+    assertEquals(0, mockClient.getHistory().size());
   }
 
   @Test
   void testHttpClientPost() {
-    assertNull(HttpClient.askQuestion(null));
+    IBackendClient concreteClient = new HttpBackendClient();
+    IBackendClient mockClient = new MockBackendClient();
+
+    assertNull(concreteClient.askQuestion(null));
 
     File f = new File("question.wav");
-    assertNull(HttpClient.askQuestion(f));
+    assertNull(concreteClient.askQuestion(f));
+
+    HistoryItem hist = mockClient.askQuestion(null);
+    assertNotNull(hist);
   }
 
   @Test
   void testHttpClientDelete() {
-    assertFalse(HttpClient.deleteQuestion(null));
-    assertFalse(HttpClient.deleteQuestion(UUID.randomUUID()));
+    IBackendClient concreteClient = new HttpBackendClient();
+    IBackendClient mockClient = new MockBackendClient();
 
-    assertFalse(HttpClient.clearHistory());
+    assertFalse(concreteClient.deleteQuestion(null));
+    assertFalse(concreteClient.deleteQuestion(UUID.randomUUID()));
+
+    assertFalse(concreteClient.clearHistory());
+
+    assertTrue(mockClient.deleteQuestion(null));
+    assertTrue(mockClient.deleteQuestion(UUID.randomUUID()));
+
+    assertTrue(mockClient.clearHistory());
+  }
+
+  /* User Story 7 Tests (BDD Scenarios) */
+  @Test
+  void testStory7_BDD1() {
+    IBackendClient client = new MockBackendClient();
+    HistoryItem hist = client.askQuestion(null);
+    assertEquals(hist.question, "What is 2 plus 2?");
+    assertEquals(hist.response, "4");
+  }
+
+  @Test
+  void testStory7_BDD2() {
+    IBackendClient client = new MockBackendClient();
+    ArrayList<HistoryItem> hist = client.getHistory();
+    assertNotNull(hist);
+
+    File f = new File("silent.wav");
+    HistoryItem item = client.askQuestion(f);
+    assertNotNull(item);
+  }
+
+  @Test
+  void testStory7_BDD3() {
+    IBackendClient client = new MockBackendClient();
+    assertTrue(client.deleteQuestion(null));
+    assertTrue(client.deleteQuestion(UUID.randomUUID()));
+  }
+
+  @Test
+  void testStory8_BDD4() {
+    IBackendClient client = new MockBackendClient();
+    assertTrue(client.clearHistory());
   }
 }

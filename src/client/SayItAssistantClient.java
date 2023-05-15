@@ -4,9 +4,10 @@
  */
 public class SayItAssistantClient {
   /**
-   * Program entry point, construct the UI.
+   * Program entry point, constructs the UI using the
+   *   default HTTP-based backend client.
    */
   public static void main(String[] args) {
-    new AppFrame();
+    new AppFrame(new HttpBackendClient());
   }
 }
