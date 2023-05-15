@@ -106,5 +106,10 @@ class AppFrame extends JFrame {
         networkThread.start();
       }
     });
+
+    taskbar.clearAllButton.addActionListener((ActionEvent e) -> {
+      storage.clear();
+      System.out.println("All responses were cleared");
+    });
   }
 }
