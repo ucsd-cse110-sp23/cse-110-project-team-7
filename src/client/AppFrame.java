@@ -2,6 +2,7 @@ import java.awt.Container;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JButton;
@@ -49,8 +50,11 @@ class AppFrame extends JFrame {
      *   populating with history where applicable
      */
     hist = new HistoryBar();
-    for (HistoryItem item : HttpClient.getHistory()) {
-      displayItem(item);
+    ArrayList<HistoryItem> items = HttpClient.getHistory();
+    if (items != null) {
+      for (HistoryItem item : HttpClient.getHistory()) {
+        displayItem(item);
+      }
     }
     add(hist, BorderLayout.WEST);
 
@@ -115,10 +119,6 @@ class AppFrame extends JFrame {
 
         Thread networkThread = new Thread(() -> {
           HistoryItem item = HttpClient.askQuestion(stream);
-          stream.delete();
-          if (item == null) {
-            return;
-          }
           displayItem(item);
           convo.show(item);
           selected = item;

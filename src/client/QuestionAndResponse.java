@@ -1,11 +1,12 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import javax.swing.BorderFactory;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 
 /**
  * Text region UI component that displays a question and its response.
@@ -14,11 +15,25 @@ class QuestionAndResponse extends JPanel {
   private static final int WIDTH = 200;
   private static final int HEIGHT = 60;
 
-  private JLabel questionLabel;
-  private JLabel responseLabel;
+  private JTextArea questionArea;
+  private JTextArea responseArea;
 
   Color darkGray = new Color(59, 59, 59);
   Font font = new Font(Font.SANS_SERIF, Font.BOLD, 14);
+
+  /**
+   * Set common properties between text areas, to reduce
+   *   duplicated code.
+   */
+  private void setTextProps(JTextArea area) {
+    area.setEditable(false);
+    area.setLineWrap(true);
+    area.setWrapStyleWord(true);
+    area.setPreferredSize(new Dimension(WIDTH, HEIGHT));
+    area.setFont(font);
+    area.setBackground(darkGray);
+    area.setForeground(Color.WHITE);
+  }
 
   /**
    * Instantiate a grid layout with two labels in opposite
@@ -29,19 +44,14 @@ class QuestionAndResponse extends JPanel {
     setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
     setBackground(darkGray);
 
-    questionLabel = new JLabel();
-    questionLabel.setPreferredSize(new Dimension(WIDTH, HEIGHT));
-    questionLabel.setFont(font);
-    questionLabel.setHorizontalAlignment(JLabel.RIGHT);
-    questionLabel.setForeground(Color.WHITE);
-    add(questionLabel, BorderLayout.LINE_END);
+    questionArea = new JTextArea();
+    questionArea.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+    setTextProps(questionArea);
+    add(questionArea, BorderLayout.LINE_END);
 
-    responseLabel = new JLabel();
-    responseLabel.setPreferredSize(new Dimension(WIDTH, HEIGHT));
-    responseLabel.setFont(font);
-    responseLabel.setHorizontalAlignment(JLabel.LEFT);
-    responseLabel.setForeground(Color.WHITE);
-    add(responseLabel, BorderLayout.LINE_START);
+    responseArea = new JTextArea();
+    setTextProps(responseArea);
+    add(responseArea, BorderLayout.LINE_START);
   }
 
   /**
@@ -50,12 +60,11 @@ class QuestionAndResponse extends JPanel {
    */
   void show(HistoryItem item) {
     if (item != null) {
-      // "<html>" allows text to wrap in JLabel
-      questionLabel.setText("<html>" + item.question + "</html>");
-      responseLabel.setText("<html>" + item.response + "</html>");
+      questionArea.setText(item.question);
+      responseArea.setText(item.response);
     } else {
-      questionLabel.setText("");
-      responseLabel.setText("");
+      questionArea.setText("");
+      responseArea.setText("");
     }
   }
 }

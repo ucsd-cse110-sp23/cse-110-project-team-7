@@ -112,6 +112,18 @@ class Storage {
   }
 
   /**
+   * Gets an item in the history storage by a String
+   *   representation of its unique ID.
+   */
+  public HistoryItem get(String id) {
+    try {
+      return get(UUID.fromString(id));
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
+  /**
    * Delete a particular question/response pair from
    *   history by its UUID.
    */
@@ -123,6 +135,18 @@ class Storage {
       }
     }
     return false;
+  }
+
+  /**
+   * Delete a particular question/response pair from
+   *   history by a String representation of its UUID.
+   */
+  public boolean delete(String id) {
+    try {
+      return delete(UUID.fromString(id));
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   /**
