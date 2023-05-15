@@ -1,10 +1,10 @@
 all: bin/SayItAssistantServer.class bin/SayItAssistantClient.class
 
-bin/SayItAssistantServer.class: src/server/*.java
-	javac -cp lib/*:bin -d bin src/server/*.java
+bin/SayItAssistantServer.class: src/server/*.java src/common/*.java
+	javac -cp lib/*:bin -d bin src/common/*.java src/server/*.java
 
-bin/SayItAssistantClient.class: src/client/*.java
-	javac -cp lib/*:bin -d bin src/client/*.java
+bin/SayItAssistantClient.class: src/client/*.java src/common/*.java
+	javac -cp lib/*:bin -d bin src/common/*.java src/client/*.java
 
 server: bin/SayItAssistantServer.class 
 	java -cp lib/*:bin SayItAssistantServer

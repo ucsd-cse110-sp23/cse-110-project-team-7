@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.UUID;
+import org.json.JSONObject;
 
 /**
  * A class responsible for handling all incoming
@@ -102,7 +103,13 @@ class PromptHandler implements HttpHandler {
       }
 
       HistoryItem item = storage.add(question, response);
-      return response;
+
+      JSONObject obj = new JSONObject();
+      obj.put("uuid", item.id);
+      obj.put("timestamp", item.timestamp);
+      obj.put("question", question);
+      obj.put("response", response);
+      return obj.toString();
     } catch (Exception e) {
       return null;
     }

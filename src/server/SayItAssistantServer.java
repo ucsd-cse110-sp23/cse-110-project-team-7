@@ -14,11 +14,17 @@ class SayItAssistantServer {
   public static void main(String[] args) {
     if (System.getenv("OPENAI_TOKEN") == null) {
       System.err.println("Error: No OpenAI token found.");
-      System.exit(1);
+      // System.exit(1);
     }
 
     try {
       Storage storage = new Storage();
+
+      // When the program shuts down, save storage to file
+      Runtime.getRuntime().addShutdownHook(
+        new Thread(() -> storage.save())
+      );
+
       ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
 
       HttpServer server = HttpServer.create(

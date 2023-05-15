@@ -1,6 +1,9 @@
+import java.awt.Container;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 
@@ -17,13 +20,18 @@ class AppFrame extends JFrame {
    * Individual UI components and the storage
    *   class they all interact with
    */
-  private Storage storage = new Storage();
   private AudioRecorder recorder = new AudioRecorder();
   private File stream = new File(QUESTION_FILE);
 
   private HistoryBar hist;
   private QuestionAndResponse convo;
   private TaskBar taskbar;
+
+  /* The question/response pair currently being viewed */
+  private HistoryItem selected = null;
+
+  /* Map relating UUID strings to question buttons */
+  private Map<String, JButton> buttonMap = new HashMap<>();
 
   /* Whether the user is currently recording audio */
   private boolean recording = false;
@@ -41,7 +49,7 @@ class AppFrame extends JFrame {
      *   populating with history where applicable
      */
     hist = new HistoryBar();
-    for (HistoryItem item : storage.history) {
+    for (HistoryItem item : HttpClient.getHistory()) {
       displayItem(item);
     }
     add(hist, BorderLayout.WEST);
@@ -52,14 +60,13 @@ class AppFrame extends JFrame {
     taskbar = new TaskBar();
     add(taskbar, BorderLayout.SOUTH);
 
+    revalidate();
+    repaint();
+
     /*
-     * Attach event listeners and save the user's
-     *   history on program shutdown
+     * Attach event listeners to relevant buttons.
      */
     addListeners();
-    Runtime.getRuntime().addShutdownHook(
-      new Thread(() -> storage.save())
-    );
   }
 
   /**
@@ -68,9 +75,13 @@ class AppFrame extends JFrame {
    */
   void displayItem(HistoryItem item) {
     JButton button = hist.add(item);
+    buttonMap.put(item.id.toString(), button);
     button.addActionListener((ActionEvent e) -> {
       convo.show(item);
+      selected = item;
     });
+    hist.revalidate();
+    hist.repaint();
   }
 
   /**
@@ -78,6 +89,21 @@ class AppFrame extends JFrame {
    *   of the UI that depend upon one another.
    */
   void addListeners() {
+    taskbar.deleteQuestionButton.addActionListener((ActionEvent e) -> {
+      if (selected == null || !HttpClient.deleteQuestion(selected.id)) {
+        return;
+      }
+
+      JButton toRemove = buttonMap.get(selected.id.toString());
+      Container parent = toRemove.getParent();
+      parent.remove(toRemove);
+      parent.revalidate();
+      parent.repaint();
+      buttonMap.remove(selected.id.toString());
+      selected = null;
+
+      convo.show(null);
+    });
     taskbar.newQuestionButton.addActionListener((ActionEvent e) -> {
       recording = !recording;
       taskbar.newQuestionButton.setText(recording ? "Stop Recording" : "New Question");
@@ -88,25 +114,34 @@ class AppFrame extends JFrame {
         recorder.stop();
 
         Thread networkThread = new Thread(() -> {
-            /*
-          String question = Whisper.speechToText(stream);
+          HistoryItem item = HttpClient.askQuestion(stream);
           stream.delete();
-          if (question == null) {
+          if (item == null) {
             return;
           }
-
-          String response = ChatGPT.ask(question);
-          if (response == null) {
-            return;
-          }
-
-          HistoryItem item = storage.add(question, response);
-          */
-          HistoryItem item = storage.add("this is a very long question that keeps going and going and going on and going on", "this is a long response that keeps going on and on and it just keeps going oh my god it's so long");
           displayItem(item);
           convo.show(item);
+          selected = item;
         });
         networkThread.start();
+      }
+    });
+    taskbar.clearAllButton.addActionListener((ActionEvent e) -> {
+      if (!HttpClient.clearHistory()) {
+        return;
+      }
+
+      Container parent = null;
+      for (JButton button : buttonMap.values()) {
+        if (parent == null) {
+          parent = button.getParent();
+        }
+        parent.remove(button);
+      }
+      if (parent != null) {
+        convo.show(null);
+        parent.revalidate();
+        parent.repaint();
       }
     });
   }

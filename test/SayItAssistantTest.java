@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -321,5 +322,28 @@ class SayItAssistantTest {
     // Delete existing item
     HistoryItem item = storage.add("hello", "world");
     assertEquals("Successfully deleted.", handler.handleDelete(item.id.toString()));
+  }
+
+  /* HttpClient Tests */
+  @Test
+  void testHttpClientGet() {
+    // Should fail gracefully if server is not running
+    assertNull(HttpClient.getHistory());
+  }
+
+  @Test
+  void testHttpClientPost() {
+    assertNull(HttpClient.askQuestion(null));
+
+    File f = new File("question.wav");
+    assertNull(HttpClient.askQuestion(f));
+  }
+
+  @Test
+  void testHttpClientDelete() {
+    assertFalse(HttpClient.deleteQuestion(null));
+    assertFalse(HttpClient.deleteQuestion(UUID.randomUUID()));
+
+    assertFalse(HttpClient.clearHistory());
   }
 }

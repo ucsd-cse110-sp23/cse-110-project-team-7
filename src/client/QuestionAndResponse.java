@@ -49,8 +49,13 @@ class QuestionAndResponse extends JPanel {
    *   match.
    */
   void show(HistoryItem item) {
-    questionLabel.setText("<html>" + item.question + "</html>");
-    responseLabel.setText("<html>" + item.response + "</html>");
-    // "<html>" allows text to wrap in JLabel
+    if (item != null) {
+      // "<html>" allows text to wrap in JLabel
+      questionLabel.setText("<html>" + item.question + "</html>");
+      responseLabel.setText("<html>" + item.response + "</html>");
+    } else {
+      questionLabel.setText("");
+      responseLabel.setText("");
+    }
   }
 }
