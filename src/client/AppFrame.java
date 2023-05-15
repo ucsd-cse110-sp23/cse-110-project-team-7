@@ -135,7 +135,6 @@ class AppFrame extends JFrame {
         networkThread.start();
       }
     });
-
     taskbar.clearAllButton.addActionListener((ActionEvent e) -> {
       if (!client.clearHistory()) {
         return;
