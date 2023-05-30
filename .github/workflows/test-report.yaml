@@ -11,7 +11,7 @@ jobs:
     - uses: dorny/test-reporter@v1
       with:
         artifact: test-results            # artifact name
-        name: JUnit Tests                # Name of the check run which will be created
-        path: '*.xml'                     # Path to test results (inside artifact .zip)
+        name: JUnit Tests                 # name of the check run which will be created
+        path: '*.xml'                     # path to test results (inside artifact .zip)
         reporter: java-junit
         only-summary: false
