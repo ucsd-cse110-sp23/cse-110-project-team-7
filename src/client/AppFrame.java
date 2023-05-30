@@ -2,11 +2,15 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JOptionPane;
 
 /**
@@ -17,6 +21,7 @@ class AppFrame extends JFrame {
   private static final int WIDTH = 640;
   private static final int HEIGHT = 480;
   private static final String QUESTION_FILE = "question.wav";
+  private static final String TOKEN_FILE = ".token";
 
   /*
    * Individual UI components and the storage
@@ -26,6 +31,7 @@ class AppFrame extends JFrame {
   private File stream = new File(QUESTION_FILE);
   private IBackendClient client;
 
+  private LoginFlow flow;
   private HistoryBar hist;
   private QuestionAndResponse convo;
   private TaskBar taskbar;
@@ -39,13 +45,15 @@ class AppFrame extends JFrame {
   /* Whether the user is currently recording audio */
   private boolean recording = false;
 
+  private boolean connected = true;
+
   AppFrame(IBackendClient inClient) {
     /*
      * Set basic properties of the window frame
      */
     setSize(WIDTH, HEIGHT);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    setVisible(true);
+    setVisible(true); 
 
     /*
      * Set backend client handler
@@ -55,9 +63,10 @@ class AppFrame extends JFrame {
       JOptionPane.showMessageDialog(
           null,
           "Failed to connect to server, application will not function correctly.",
-          "SayItAssistant Error",
+          "SayIt Assistant Error",
           JOptionPane.ERROR_MESSAGE
       );
+      connected = false;
     }
 
     /*
@@ -65,19 +74,25 @@ class AppFrame extends JFrame {
      *   populating with history where applicable
      */
     hist = new HistoryBar();
-    ArrayList<HistoryItem> items = client.getHistory();
-    if (items != null) {
-      for (HistoryItem item : client.getHistory()) {
-        displayItem(item);
-      }
-    }
-    add(hist, BorderLayout.WEST);
-
     convo = new QuestionAndResponse();
-    add(convo, BorderLayout.CENTER);
-
     taskbar = new TaskBar();
-    add(taskbar, BorderLayout.SOUTH);
+
+    try {
+      File tokenFile = new File(TOKEN_FILE);
+      if (!tokenFile.exists()) {
+        throw new Exception();
+      }
+
+      String token = Files.readString(tokenFile.toPath(), StandardCharsets.UTF_8);
+      if (client.checkToken(token)) {
+        mainView(false);
+      } else {
+        throw new Exception();
+      }
+    } catch (Exception e) {
+      flow = new LoginFlow();
+      add(flow, BorderLayout.CENTER);
+    }
 
     revalidate();
     repaint();
@@ -162,5 +177,77 @@ class AppFrame extends JFrame {
         parent.repaint();
       }
     });
+
+    if (flow != null) {
+      flow.signupDone.addActionListener((ActionEvent e) -> {
+        String msg = flow.checkInputs();
+        if (msg != null) {
+          JOptionPane.showMessageDialog(
+              null,
+              msg,
+              "SayIt Assistant Error",
+              JOptionPane.ERROR_MESSAGE
+          );
+          return;
+        }
+
+        if (!client.signup(flow.getEmail(), flow.getPassword())) {
+          JOptionPane.showMessageDialog(
+              null,
+              connected ? "Email already in use." : "Failed to reach server.",
+              "SayIt Assistant Error",
+              JOptionPane.ERROR_MESSAGE
+          );
+          return;
+        }
+
+        int ans = JOptionPane.showConfirmDialog(
+            null,
+            "Would you like to enable automatic login on this computer?",
+            "SayIt Assistant",
+            JOptionPane.YES_NO_OPTION
+        );
+        if (ans == 0) {
+          try {
+            PrintWriter writer = new PrintWriter(TOKEN_FILE);
+            writer.print(client.getToken());
+            writer.close();
+          } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                null,
+                "Failed to enable automatic login.",
+                "SayIt Assistant Error",
+                JOptionPane.ERROR_MESSAGE
+            );
+          }
+        }
+
+        mainView(true);
+      });
+      flow.loginDone.addActionListener((ActionEvent e) -> {
+        /* TODO: Implement */
+      });
+    }
+  }
+
+  /**
+   * Set up the main application view, after signup/login.
+   */
+  private void mainView(boolean has_flow) {
+    if (has_flow) {
+      remove(flow);
+    }
+
+    ArrayList<HistoryItem> items = client.getHistory();
+    if (items != null) {
+      for (HistoryItem item : client.getHistory()) {
+        displayItem(item);
+      }
+    }
+    add(hist, BorderLayout.WEST);
+    add(convo, BorderLayout.CENTER);
+    add(taskbar, BorderLayout.SOUTH);
+    revalidate();
+    repaint();
   }
 }

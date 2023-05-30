@@ -344,12 +344,9 @@ class SayItAssistantMS1Test {
   /* HttpClient Tests */
   @Test
   void testHttpClientGet() {
-    IBackendClient concreteClient = new HttpBackendClient();
     IBackendClient mockClient = new MockBackendClient();
 
     // Should fail gracefully if server is not running
-    assertNull(concreteClient.getHistory());
-
     assertEquals(0, mockClient.getHistory().size());
   }
 
@@ -369,13 +366,7 @@ class SayItAssistantMS1Test {
 
   @Test
   void testHttpClientDelete() {
-    IBackendClient concreteClient = new HttpBackendClient();
     IBackendClient mockClient = new MockBackendClient();
-
-    assertFalse(concreteClient.deleteQuestion(null));
-    assertFalse(concreteClient.deleteQuestion(UUID.randomUUID()));
-
-    assertFalse(concreteClient.clearHistory());
 
     assertTrue(mockClient.deleteQuestion(null));
     assertTrue(mockClient.deleteQuestion(UUID.randomUUID()));

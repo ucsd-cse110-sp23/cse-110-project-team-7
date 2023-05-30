@@ -12,6 +12,14 @@ import java.util.UUID;
  *     to give the client its functionality.
  */
 interface IBackendClient {
+  public boolean signup(String email, String password);
+
+  public boolean login(String email, String password);
+
+  public String getToken();
+
+  public boolean checkToken(String tok);
+
   public ArrayList<HistoryItem> getHistory();
 
   public HistoryItem askQuestion(File stream);
