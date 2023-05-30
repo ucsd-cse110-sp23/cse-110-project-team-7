@@ -55,6 +55,7 @@ class SayItAssistantMS2Test {
     assertEquals("My favorite color is blue.",  hist.get(1).response);
   }
 
+  /* MS2 User Story 2 Tests (BDD Scenarios) */
   @Test
   void testMS2Story2_BDD1() {
     IBackendClient client = new MockBackendClient();
@@ -85,5 +86,41 @@ class SayItAssistantMS2Test {
 
     verification = password;
     assertTrue(client.signup("helen@gmail.com", password));
+  }
+
+  /* MS2 User Story 7 Tests (BDD Scenarios) */
+  @Test
+  void testMS2Story7_BDD1() {
+    IBackendClient client = new MockBackendClient();
+    assertTrue(client.connected());
+    assertTrue(client.signup("helen@gmail.com", "password"));
+
+    assertTrue(client.login("helen@gmail.com", "password"));
+  }
+
+  @Test
+  void testMS2Story7_BDD2() {
+    IBackendClient client = new MockBackendClient();
+    assertTrue(client.connected());
+    assertTrue(client.signup("helen@gmail.com", "password"));
+
+    assertFalse(client.login("helen@gmail.com", "notpassword"));
+  }
+
+  @Test
+  void testMS2Story7_BDD3() {
+    IBackendClient client = new MockBackendClient();
+    assertTrue(client.connected());
+    assertTrue(client.signup("helen@gmail.com", "password"));
+
+    assertFalse(client.login("nothelen@gmail.com", "password"));
+  }
+
+  @Test
+  void testMS2Story7_BDD4() {
+    IBackendClient client = new MockBackendClient();
+    assertTrue(client.connected());
+    assertTrue(client.signup("helen@gmail.com", "password"));
+    assertTrue(client.checkToken(client.getToken()));
   }
 }

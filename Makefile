@@ -7,11 +7,13 @@ CHECKSTYLE = lib/checkstyle-10.10.0-all.jar
 ENV = MONGO_URI="mongodb+srv://alrussell:tuPxiYrr4MKZCZJY@cluster0.jevkxgs.mongodb.net/?retryWrites=true&w=majority" OPENAI_TOKEN="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"
 MOCK_ENV = MONGO_URI="mongodb://dummy" OPENAI_TOKEN="fake_token"
 
+JFLAGS = -Xlint:deprecation
+
 bin/SayItAssistantClient.class: src/client/*.java src/common/*.java
-	javac -cp $(CLASSPATH) -d bin src/common/*.java src/client/*.java
+	javac -cp $(CLASSPATH) $(JFLAGS) -d bin src/common/*.java src/client/*.java
 
 bin/SayItAssistantServer.class: bin/SayItAssistantClient.class src/server/*.java src/common/*.java src/mock/*.java
-	javac -cp $(CLASSPATH) -d bin src/mock/*.java src/server/*.java
+	javac -cp $(CLASSPATH) $(JFLAGS) -d bin src/mock/*.java src/server/*.java
 
 server: bin/SayItAssistantServer.class 
 	$(ENV) java -cp $(CLASSPATH) SayItAssistantServer

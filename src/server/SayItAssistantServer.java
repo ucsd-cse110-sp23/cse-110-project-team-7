@@ -31,15 +31,15 @@ class SayItAssistantServer {
         );
       }
 
-      ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
-
       HttpServer server = HttpServer.create(
           new InetSocketAddress(HOST, PORT),
           0
       );
 
       if (args.length > 0 && args[0].equals("--test")) {
-        server.createContext("/prompt", new PromptHandler(storage, new MockWhisper(), new MockChatGPT()));
+        server.createContext("/prompt", new PromptHandler(
+            storage, new MockWhisper(), new MockChatGPT())
+        );
       } else {
         server.createContext("/prompt", new PromptHandler(storage));
       }
@@ -51,6 +51,7 @@ class SayItAssistantServer {
       }
       server.createContext("/auth", auth);
 
+      ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
       server.setExecutor(threadPoolExecutor);
       server.start();
 

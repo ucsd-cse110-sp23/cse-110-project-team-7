@@ -19,19 +19,19 @@ import org.json.JSONTokener;
  *   the application's REST API backend.
  */
 class MockBackendClient implements IBackendClient {
-  Set<String> users = new HashSet<>();
+  Set<String[]> users = new HashSet<>();
   String token = null;
 
   /**
    * Sign up for the service using an email and password.
    */
   public boolean signup(String email, String password) {
-    for (String user : users) {
-      if (user.equals(email)) {
+    for (String[] user : users) {
+      if (user[0].equals(email)) {
         return false;
       }
     }
-    users.add(email);
+    users.add(new String[] { email, password });
     token = email;
     return true;
   }
@@ -40,11 +40,13 @@ class MockBackendClient implements IBackendClient {
    * Log in to the service using an email and password.
    */
   public boolean login(String email, String password) {
-    if (!users.contains(email)) {
-      return false;
+    for (String[] user : users) {
+      if (user[0].equals(email) && user[1].equals(password)) {
+        token = email;
+        return true;
+      }
     }
-    token = email;
-    return true;
+    return false;
   }
 
   /**
