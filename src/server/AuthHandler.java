@@ -117,21 +117,6 @@ class AuthHandler implements HttpHandler {
     return null;
   }
 
-  /*
-  private String handleAuto(String token, String mac) {
-    Document query = new Document(eq("_id", token));
-    Document update = new Document(
-        "$push",
-        new Document("auto", mac)
-    );
-    UpdateResult result = users.updateOne(query, update);
-    if (result.getModifiedCount() != 1) {
-      return null;
-    }
-    return "Success.";
-  }
-  */
-
   private String handleCheck(String token) {
     Document doc = users.find(eq("_id", new ObjectId(token))).first();
     return (doc != null) ? "Success." : null;
