@@ -93,6 +93,18 @@ class HttpBackendClient implements IBackendClient {
   }
 
   /**
+   * Return true if the backend is reachable, and false otherwise.
+   */
+  public boolean connected() {
+    try {
+      String res = finishRequest(initRequest(API_ENDPOINT, "TRACE"));
+      return res.equals("Successfully connected.");
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  /**
    * Helper method for initializing a network request.
    */
   private HttpURLConnection initRequest(String endpoint, String method) {

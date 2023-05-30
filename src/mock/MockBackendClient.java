@@ -44,4 +44,11 @@ class MockBackendClient implements IBackendClient {
   public boolean clearHistory() {
     return true;
   }
+
+  /**
+   * Returns whether the client is connected to the backend.
+   */
+  public boolean connected() {
+    return true;
+  }
 }

@@ -13,7 +13,12 @@ import java.util.UUID;
  */
 interface IBackendClient {
   public ArrayList<HistoryItem> getHistory();
+
   public HistoryItem askQuestion(File stream);
+
   public boolean deleteQuestion(UUID id);
+
   public boolean clearHistory();
+
+  public boolean connected();
 }

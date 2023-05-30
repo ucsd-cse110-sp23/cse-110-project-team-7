@@ -1,13 +1,11 @@
-import java.io.File;
-
 /**
  * A mock class emulating the standard ChatGPT
  *   class, for use in testing.
  */
-class MockChatGPT {
+class MockChatGPT implements IChatGPT {
   int counter = 0;
 
-  String ask(String question) {
+  public String ask(String question) {
     switch (counter++) {
       case 0:
         return "2 plus 2 equals 4.";

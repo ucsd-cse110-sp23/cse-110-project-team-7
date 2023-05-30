@@ -1,0 +1,26 @@
+name: 'Java CI'
+on:
+  pull_request:
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      # checkout the repo
+      - uses: actions/checkout@v2
+      # set up Java environment
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+      # run linter
+      - name: Run Checkstyle Linter
+        run: make check
+      # build everything (includes running unit tests)
+      - name: Run JUnit Tests
+        run: make test
+      - uses: actions/upload-artifact@v2  # upload test results
+        if: success() || failure()        # run this step even if previous step failed
+        with:
+          name: test-results
+          path: reports/TEST-junit-jupiter.xml
