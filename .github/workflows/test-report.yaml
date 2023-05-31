@@ -2,6 +2,7 @@ name: 'JUnit Test Report'
 on:
   workflow_run:
     workflows: ['Java CI']                # runs after CI workflow
+    workflows: ['Java CI']                     # runs after CI workflow
     types:
       - completed
 jobs:
