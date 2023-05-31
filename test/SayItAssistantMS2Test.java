@@ -130,6 +130,39 @@ class SayItAssistantMS2Test {
     assertEquals("2 plus 2 equals 4.", hist.response);
   }
 
+  /* MS2 User Story 4 Tests (BDD Scenarios) */
+  @Test
+  void testMS2Story4_BDD1() {
+    IBackendClient mockClient = new MockBackendClient();
+    assertTrue(mockClient.connected());
+
+    assertEquals(new ArrayList<HistoryItem>(), mockClient.getHistory());
+  }
+
+  @Test
+  void testMS2Story4_BDD2() {
+    IBackendClient mockClient = new MockBackendClient();
+    assertTrue(mockClient.connected());
+
+    mockClient.askQuestion("What is 2 plus 2?");
+
+    assertEquals("What is 2 plus 2?", mockClient.getHistory().get(0).question);
+    assertEquals("2 plus 2 equals 4.", mockClient.getHistory().get(0).response);
+  }
+
+  @Test
+  void testMS2Story4_BDD3() {
+    IBackendClient mockClient = new MockBackendClient();
+    assertTrue(mockClient.connected());
+
+    mockClient.askQuestion("What is 2 plus 2?");
+    mockClient.askQuestion("What is your favorite color?");
+    mockClient.askQuestion("What is the largest country in the world?");
+
+    assertEquals("What is 2 plus 2?", mockClient.getHistory().get(0).question);
+    assertEquals("2 plus 2 equals 4.", mockClient.getHistory().get(0).response);
+  }
+
   /* MS2 User Story 7 Tests (BDD Scenarios) */
   @Test
   void testMS2Story7_BDD1() {
