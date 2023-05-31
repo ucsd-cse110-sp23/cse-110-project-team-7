@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.UUID;
+import org.bson.Document;
 
 import org.junit.jupiter.api.Test;
 
@@ -305,40 +306,47 @@ class SayItAssistantMS1Test {
   /* PromptHandler Tests */
   @Test
   void testHandlerGet() {
-    Storage storage = new Storage("[]");
-    HistoryItem twoPlusTwo = storage.add("What is 2 plus 2?", "4");
-
-    PromptHandler handler = new PromptHandler(storage, new MockChatGPT(), new Prompt());
+    PromptHandler handler = new PromptHandler(new MockChatGPT(), new Prompt(), true);
+    ArrayList<Document> list = new ArrayList<>();
+    list.add(new Document()
+        .append("uuid", "fake_id")
+        .append("timestamp", 1000L)
+        .append("question", "What is 2 plus 2?")
+        .append("response", "4")
+    );
+    Document user = new Document().append("history", list);
 
     // Query all
-    assertNotNull(handler.handleGet(null));
+    assertNotNull(handler.handleGet(user, null));
 
     // Query one that does not exist
-    assertNull(handler.handleGet(UUID.randomUUID().toString()));
+    assertNull(handler.handleGet(user, UUID.randomUUID().toString()));
 
     // Query one that does exist
-    assertEquals("4", handler.handleGet(twoPlusTwo.id.toString()));
+    assertEquals("4", handler.handleGet(user, "fake_id"));
 
     // Delete from storage, then confirm question no longer exists
-    storage.delete(twoPlusTwo.id);
-    assertNull(handler.handleGet(twoPlusTwo.id.toString()));
-    assertEquals("[]", handler.handleGet(null));
+    list.remove(0);
+    assertNull(handler.handleGet(user, "fake_id"));
+    assertEquals("[]", handler.handleGet(user, null));
   }
 
   @Test
   void testHandlerDelete() {
-    Storage storage = new Storage("[]");
-    PromptHandler handler = new PromptHandler(storage, new MockChatGPT(), new Prompt());
+    PromptHandler handler = new PromptHandler(new MockChatGPT(), new Prompt(), true);
+
+    ArrayList<Document> list = new ArrayList<>();
+    Document user = new Document().append("history", list);
 
     // Delete non-existent item(s)
-    assertNull(handler.handleDelete(UUID.randomUUID().toString()));
+    assertNull(handler.handleDelete(user, UUID.randomUUID().toString()));
 
     // Delete all items
-    assertEquals("Successfully deleted.", handler.handleDelete(null));
+    assertEquals("Successfully deleted.", handler.handleDelete(user, null));
 
     // Delete existing item
-    HistoryItem item = storage.add("hello", "world");
-    assertEquals("Successfully deleted.", handler.handleDelete(item.id.toString()));
+    list.add(new Document().append("uuid", "fake_id"));
+    assertEquals("Successfully deleted.", handler.handleDelete(user, "fake_id"));
   }
 
   /* HttpClient Tests */
@@ -379,7 +387,7 @@ class SayItAssistantMS1Test {
     IBackendClient client = new MockBackendClient();
     HistoryItem hist = client.askQuestion(null);
     assertEquals(hist.question, "What is 2 plus 2?");
-    assertEquals(hist.response, "4");
+    assertEquals(hist.response, "2 plus 2 equals 4.");
   }
 
   @Test

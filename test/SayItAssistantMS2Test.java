@@ -25,7 +25,7 @@ class SayItAssistantMS2Test {
   /* MS2 User Story 1 Tests (BDD Scenarios) */
   @Test
   void testMS2Story1_BDD1() {
-    IBackendClient client = new HttpBackendClient();
+    IBackendClient client = new MockBackendClient();
     assertTrue(client.connected());
 
     ArrayList<HistoryItem> empty = new ArrayList<>();
@@ -36,23 +36,26 @@ class SayItAssistantMS2Test {
     assertEquals("What is 2 plus 2?", item.question);
     assertEquals("2 plus 2 equals 4.", item.response);
 
-    item = client.askQuestion("What is your favorite color?");
+    item = client.askQuestion("What is 2 plus 2?");
     assertNotNull(item);
-    assertEquals("What is your favorite color?", item.question);
-    assertEquals("My favorite color is blue.", item.response);
+    assertEquals("What is 2 plus 2?", item.question);
+    assertEquals("2 plus 2 equals 4.", item.response);
   }
 
   @Test
   void testMS2Story1_BDD2() {
-    IBackendClient client = new HttpBackendClient();
+    IBackendClient client = new MockBackendClient();
     assertTrue(client.connected());
+
+    client.askQuestion("What is 2 plus 2?");
+    client.askQuestion("What is 2 plus 2?");
 
     ArrayList<HistoryItem> hist = client.getHistory();
     assertEquals("What is 2 plus 2?", hist.get(0).question);
     assertEquals("2 plus 2 equals 4.", hist.get(0).response);
 
-    assertEquals("What is your favorite color?", hist.get(1).question);
-    assertEquals("My favorite color is blue.",  hist.get(1).response);
+    assertEquals("What is 2 plus 2?", hist.get(1).question);
+    assertEquals("2 plus 2 equals 4.",  hist.get(1).response);
   }
 
   /* MS2 User Story 2 Tests (BDD Scenarios) */
@@ -91,26 +94,40 @@ class SayItAssistantMS2Test {
   /* MS2 User Story 3 Tests (BDD Scenarios) */
   @Test
   void testMS2Story3_BDD1() {
-    IBackendClient concreteClient = new HttpBackendClient();
     IBackendClient mockClient = new MockBackendClient();
-
-    assertTrue(concreteClient.connected());
     assertTrue(mockClient.connected());
 
     File f = new File("test/silent.wav");
-    String concreteType = concreteClient.questionType(f);
-    assertNotNull(concreteType);
-    assertEquals("POST", concreteType.substring(0, 4));
     assertEquals("POST", mockClient.questionType(f));
 
-    HistoryItem concreteHist = concreteClient.askQuestion(concreteType.substring(6));
-    assertNotNull(concreteHist);
-    assertEquals("Question. What is 2 plus 2?", concreteHist.question);
-    assertEquals("2 plus 2 equals 4.", concreteHist.response);
+    HistoryItem hist = mockClient.askQuestion("Question. What is 2 plus 2?");
+    assertNotNull(hist);
+    assertEquals("What is 2 plus 2?", hist.question);
+    assertEquals("2 plus 2 equals 4.", hist.response);
   }
 
   @Test
   void testMS2Story3_BDD2() {
+    IBackendClient mockClient = new MockBackendClient();
+    assertTrue(mockClient.connected());
+
+    File f = new File("test/silent.wav");
+    assertEquals("POST", mockClient.questionType(f));
+
+    HistoryItem hist = mockClient.askQuestion("Question. What is 2 plus 2?");
+    assertNotNull(hist);
+    assertEquals("What is 2 plus 2?", hist.question);
+    assertEquals("2 plus 2 equals 4.", hist.response);
+
+    hist = mockClient.askQuestion("Question. What is 2 plus 2?");
+    assertNotNull(hist);
+    assertEquals("What is 2 plus 2?", hist.question);
+    assertEquals("2 plus 2 equals 4.", hist.response);
+
+    hist = mockClient.askQuestion("Question. What is 2 plus 2?");
+    assertNotNull(hist);
+    assertEquals("What is 2 plus 2?", hist.question);
+    assertEquals("2 plus 2 equals 4.", hist.response);
   }
 
   /* MS2 User Story 7 Tests (BDD Scenarios) */

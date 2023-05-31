@@ -19,6 +19,7 @@ import org.json.JSONTokener;
  *   the application's REST API backend.
  */
 class MockBackendClient implements IBackendClient {
+  ArrayList<HistoryItem> history = new ArrayList<>();
   Set<String[]> users = new HashSet<>();
   String token = null;
 
@@ -67,7 +68,7 @@ class MockBackendClient implements IBackendClient {
    * Fetch all past questions and responses via a GET request.
    */
   public ArrayList<HistoryItem> getHistory() {
-    return new ArrayList<>();
+    return history;
   }
 
   public String questionType(File stream) {
@@ -77,7 +78,9 @@ class MockBackendClient implements IBackendClient {
    * Ask a new question by POSTing a question string.
    */
   public HistoryItem askQuestion(String question) {
-    return new HistoryItem("What is 2 plus 2?", "4");
+    HistoryItem item = new HistoryItem("What is 2 plus 2?", "2 plus 2 equals 4.");
+    history.add(item);
+    return item;
   }
 
   /**
