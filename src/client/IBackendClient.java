@@ -22,6 +22,8 @@ interface IBackendClient {
 
   public ArrayList<HistoryItem> getHistory();
 
+  public String questionType(File stream);
+
   public HistoryItem askQuestion(File stream);
 
   public boolean deleteQuestion(UUID id);

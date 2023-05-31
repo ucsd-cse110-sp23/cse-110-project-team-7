@@ -15,19 +15,18 @@ import org.json.JSONObject;
  *   the GET, POST, and DELETE methods.
  */
 class PromptHandler implements HttpHandler {
-  private static final String QUESTION_FILE = "question.wav";
   private Storage storage;
-  private IWhisper whisper;
   private IChatGPT chatGPT;
+  private IPrompt prompt;
 
-  PromptHandler(Storage s, IWhisper w, IChatGPT c) {
+  PromptHandler(Storage s, IChatGPT c, IPrompt p) {
     storage = s;
-    whisper = w;
     chatGPT = c;
+    prompt = p;
   }
 
-  PromptHandler(Storage s) {
-    this(s, new Whisper(), new ChatGPT());
+  PromptHandler(Storage s, IPrompt p) {
+    this(s, new ChatGPT(), p);
   }
 
   /**
@@ -102,22 +101,10 @@ class PromptHandler implements HttpHandler {
    */
   String handlePost(String query, HttpExchange t) {
     try {
-      FileOutputStream out = new FileOutputStream(QUESTION_FILE);
-      InputStream ios = t.getRequestBody();
-      int i;
-      while ((i = ios.read()) != -1) {
-        out.write(i);
-      }
-      out.close();
-
-      File f = new File(QUESTION_FILE);
-      String question = whisper.speechToText(f);
-      f.delete();
-      if (question == null) {
-        return null;
-      }
-      
+      String question = prompt.getPrompt();
+      System.out.println(question);
       String response = chatGPT.ask(question);
+      
       if (response == null) {
         return null;
       }
@@ -131,6 +118,7 @@ class PromptHandler implements HttpHandler {
       obj.put("response", response);
       return obj.toString();
     } catch (Exception e) {
+      System.out.println("Error with post request");
       return null;
     }
   }

@@ -36,13 +36,16 @@ class SayItAssistantServer {
           0
       );
 
+      Prompt prompt = new Prompt();
       if (args.length > 0 && args[0].equals("--test")) {
         server.createContext("/prompt", new PromptHandler(
-            storage, new MockWhisper(), new MockChatGPT())
+            storage, new MockChatGPT(), prompt)
         );
       } else {
-        server.createContext("/prompt", new PromptHandler(storage));
+        server.createContext("/prompt", new PromptHandler(storage, prompt));
       }
+
+      server.createContext("/type", new TypeHandler(prompt, new Whisper()));
 
       AuthHandler auth = new AuthHandler();
       if (!auth.ok()) {

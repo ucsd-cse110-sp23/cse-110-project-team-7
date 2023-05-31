@@ -70,6 +70,9 @@ class MockBackendClient implements IBackendClient {
     return new ArrayList<>();
   }
 
+  public String questionType(File stream) {
+    return "POST";
+  }
   /**
    * Ask a new question by POSTing a File with voice data.
    */
