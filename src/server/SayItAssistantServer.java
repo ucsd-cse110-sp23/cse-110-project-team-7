@@ -1,3 +1,4 @@
+import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
@@ -18,12 +19,17 @@ class SayItAssistantServer {
     }
 
     try {
-      Storage storage = new Storage();
+      Storage storage;
+      if (args.length > 0 && args[0].equals("--test")) {
+        storage = new Storage("[]");
+      } else {
+        storage = new Storage();
 
-      // When the program shuts down, save storage to file
-      Runtime.getRuntime().addShutdownHook(
-        new Thread(() -> storage.save())
-      );
+        // When the program shuts down, save storage to file
+        Runtime.getRuntime().addShutdownHook(
+          new Thread(() -> storage.save())
+        );
+      }
 
       ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
 
@@ -31,7 +37,10 @@ class SayItAssistantServer {
           new InetSocketAddress(HOST, PORT),
           0
       );
-      server.createContext("/prompt", new PromptHandler(storage));
+      HttpHandler handler = (args.length > 0 && args[0].equals("--test"))
+          ? new PromptHandler(storage, new MockWhisper(), new MockChatGPT())
+          : new PromptHandler(storage);
+      server.createContext("/prompt", handler);
       server.setExecutor(threadPoolExecutor);
       server.start();
 

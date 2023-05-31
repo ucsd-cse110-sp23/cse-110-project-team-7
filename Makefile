@@ -1,29 +1,33 @@
 all: bin/SayItAssistantServer.class bin/SayItAssistantClient.class
 
-bin/SayItAssistantServer.class: src/server/*.java src/common/*.java
-	javac -cp lib/*:bin -d bin src/common/*.java src/server/*.java
+CLASSPATH = lib/json-20230227.jar:bin
+TESTCLASSPATH = $(CLASSPATH):lib/junit-platform-console-standalone-1.9.2.jar
+CHECKSTYLE = lib/checkstyle-10.10.0-all.jar
 
 bin/SayItAssistantClient.class: src/client/*.java src/common/*.java
-	javac -cp lib/*:bin -d bin src/common/*.java src/client/*.java
+	javac -cp $(CLASSPATH) -d bin src/common/*.java src/client/*.java
+
+bin/SayItAssistantServer.class: bin/SayItAssistantClient.class src/server/*.java src/common/*.java src/mock/*.java
+	javac -cp $(CLASSPATH) -d bin src/mock/*.java src/server/*.java
 
 server: bin/SayItAssistantServer.class 
-	java -cp lib/*:bin SayItAssistantServer
+	java -cp $(CLASSPATH) SayItAssistantServer
 
 client: bin/SayItAssistantClient.class
-	java -cp lib/*:bin SayItAssistantClient
+	java -cp $(CLASSPATH) SayItAssistantClient
 
-demo: bin/SayItAssistantServer.class bin/SayItAssistantClient.class
-	OPENAI_TOKEN="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" java -cp lib/*:bin SayItAssistantServer &
-	java -cp lib/*:bin SayItAssistantClient
+demo: bin/SayItAssistantServer.class
+	OPENAI_TOKEN="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" java -cp $(CLASSPATH) SayItAssistantServer &
+	java -cp $(CLASSPATH) SayItAssistantClient
 
-bin/SayItAssistantTest.class: bin/SayItAssistantServer.class bin/SayItAssistantClient.class test/*.java
-	javac -cp lib/*:bin -d bin test/*.java
+bin/SayItAssistantMS2Test.class: bin/SayItAssistantServer.class test/*.java
+	javac -cp $(TESTCLASSPATH) -d bin test/*.java
 
-test: bin/SayItAssistantTest.class
-	java -cp lib/*:bin org.junit.platform.console.ConsoleLauncher -c SayItAssistantTest --reports-dir=reports
+test: bin/SayItAssistantMS2Test.class
+	OPENAI_TOKEN="fake_token" java -cp $(TESTCLASSPATH) org.junit.platform.console.ConsoleLauncher -c SayItAssistantMS1Test -c SayItAssistantMS2Test --reports-dir=reports
 
 check:
-	java -jar lib/checkstyle-10.10.0-all.jar -c checkstyle.xml src/*
+	java -jar $(CHECKSTYLE) -c checkstyle.xml src/*
 
 clean:
-	rm -f bin/*
+	rm -f bin/*class

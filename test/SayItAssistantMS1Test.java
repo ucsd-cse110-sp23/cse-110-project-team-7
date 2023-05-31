@@ -3,7 +3,6 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -13,9 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Top-level test runner, verifying program behavior.
+ * Test runner for all Milestone 1 features and stories.
  */
-class SayItAssistantTest {
+class SayItAssistantMS1Test {
   /* AudioRecorder tests */
   @Test
   void testAudioRecorder() {
@@ -33,29 +32,34 @@ class SayItAssistantTest {
   /* Whisper Tests */
   @Test
   void testWhisperBadFile() {
-    assertNull(Whisper.speechToText(null));
+    Whisper w = new Whisper();
+    assertNull(w.speechToText(null));
   }
 
   @Test
   void testWhisperEmptyFile() {
+    Whisper w = new Whisper();
     File tmp = new File("dummy");
-    assertNull(Whisper.speechToText(tmp));
+    assertNull(w.speechToText(tmp));
   }
 
   @Test
   void testWhisperNoToken() {
-    assertNull(Whisper.speechToText(new File("silent.wav")));
+    Whisper w = new Whisper();
+    assertNull(w.speechToText(new File("test/silent.wav")));
   }
 
   /* ChatGPT Tests */
   @Test
   void testChatGPTBadQuestion() {
-    assertNull(ChatGPT.ask(null));
+    ChatGPT c = new ChatGPT();
+    assertNull(c.ask(null));
   }
 
   @Test
   void testChatGPTNoToken() {
-    assertNull(ChatGPT.ask("What is the smallest country in the world?"));
+    ChatGPT c = new ChatGPT();
+    assertNull(c.ask("What is the smallest country in the world?"));
   }
 
   /* User Story 1 Tests (BDD Scenarios) */
@@ -394,7 +398,7 @@ class SayItAssistantTest {
     ArrayList<HistoryItem> hist = client.getHistory();
     assertNotNull(hist);
 
-    File f = new File("silent.wav");
+    File f = new File("test/silent.wav");
     HistoryItem item = client.askQuestion(f);
     assertNotNull(item);
   }

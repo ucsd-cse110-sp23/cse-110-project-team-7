@@ -13,7 +13,7 @@ import org.json.JSONObject;
  *   with OpenAI's Whisper API for speech-to-text
  *   conversion.
  */
-public class Whisper {
+public class Whisper implements IWhisper {
   private static final String API_ENDPOINT = "https://api.openai.com/v1/audio/transcriptions";
   private static final String MODEL = "whisper-1";
 
@@ -110,7 +110,7 @@ public class Whisper {
    *   speech-to-text conversion.
    * Source: CSE 110 Lab 4
    */
-  public static String speechToText(File file) {
+  public String speechToText(File file) {
     try {
       if (!file.exists()) {
         return null;

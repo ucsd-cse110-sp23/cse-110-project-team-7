@@ -17,9 +17,17 @@ import org.json.JSONObject;
 class PromptHandler implements HttpHandler {
   private static final String QUESTION_FILE = "question.wav";
   private Storage storage;
+  private IWhisper whisper;
+  private IChatGPT chatGPT;
+
+  PromptHandler(Storage s, IWhisper w, IChatGPT c) {
+    storage = s;
+    whisper = w;
+    chatGPT = c;
+  }
 
   PromptHandler(Storage s) {
-    storage = s;
+    this(s, new Whisper(), new ChatGPT());
   }
 
   /**
@@ -48,6 +56,9 @@ class PromptHandler implements HttpHandler {
         break;
       case "DELETE":
         response = handleDelete(query);
+        break;
+      case "TRACE":
+        response = handleTrace(query);
         break;
       default:
         response = null;
@@ -100,13 +111,13 @@ class PromptHandler implements HttpHandler {
       out.close();
 
       File f = new File(QUESTION_FILE);
-      String question = Whisper.speechToText(f);
+      String question = whisper.speechToText(f);
       f.delete();
       if (question == null) {
         return null;
       }
       
-      String response = ChatGPT.ask(question);
+      String response = chatGPT.ask(question);
       if (response == null) {
         return null;
       }
@@ -137,5 +148,13 @@ class PromptHandler implements HttpHandler {
       storage.clear();
     }
     return "Successfully deleted.";
+  }
+
+  /**
+   * When a TRACE request is made, respond with a success
+   *   message.
+   */
+  String handleTrace(String query) {
+    return "Successfully connected.";
   }
 }

@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 /**
  * Top-level UI frame that constructs a text region
@@ -50,6 +51,14 @@ class AppFrame extends JFrame {
      * Set backend client handler
      */
     client = inClient;
+    if (!client.connected()) {
+      JOptionPane.showMessageDialog(
+          null,
+          "Failed to connect to server, application will not function correctly.",
+          "SayItAssistant Error",
+          JOptionPane.ERROR_MESSAGE
+      );
+    }
 
     /*
      * Instantiate each individual component,

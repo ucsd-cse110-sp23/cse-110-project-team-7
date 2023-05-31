@@ -10,7 +10,7 @@ import org.json.JSONObject;
  * Class for interacting with and retrieving data from
  *   OpenAI's DaVinci model.
  */
-class ChatGPT {
+class ChatGPT implements IChatGPT {
   private static final String API_ENDPOINT = "https://api.openai.com/v1/completions";
   private static final String MODEL = "text-davinci-003";
   private static final int MAX_TOKENS = 100;
@@ -20,7 +20,7 @@ class ChatGPT {
    *   to its API endpoint.
    * Source: CSE 110 Lab 4
    */
-  public static String ask(String question) {
+  public String ask(String question) {
     try {
       if (question == null) {
         return null;
