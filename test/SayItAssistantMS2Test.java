@@ -54,4 +54,36 @@ class SayItAssistantMS2Test {
     assertEquals("What is your favorite color?", hist.get(1).question);
     assertEquals("My favorite color is blue.",  hist.get(1).response);
   }
+
+  @Test
+  void testMS2Story2_BDD1() {
+    IBackendClient client = new MockBackendClient();
+    assertTrue(client.connected());
+
+    assertTrue(client.signup("helen@gmail.com", "password"));
+    assertNotNull(client.getToken());
+    assertTrue(client.checkToken(client.getToken()));
+  }
+
+  @Test
+  void testMS2Story2_BDD2() {
+    IBackendClient client = new MockBackendClient();
+    assertTrue(client.connected());
+    assertTrue(client.signup("helen@gmail.com", "password"));
+
+    assertFalse(client.signup("helen@gmail.com", "newpassword"));
+  }
+  
+  @Test
+  void testMS2Story2_BDD3() {
+    IBackendClient client = new MockBackendClient();
+    assertTrue(client.connected());
+    
+    String password = "password";
+    String verification = "notpassword";
+    assertFalse(password.equals(verification));
+
+    verification = password;
+    assertTrue(client.signup("helen@gmail.com", password));
+  }
 }

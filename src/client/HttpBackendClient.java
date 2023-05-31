@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.NetworkInterface;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +25,51 @@ import org.json.JSONTokener;
  *     (e.g. MockBackendClient for testing).
  */
 class HttpBackendClient implements IBackendClient {
+  private static final String AUTH_ENDPOINT = "http://localhost:8080/auth";
   private static final String API_ENDPOINT = "http://localhost:8080/prompt";
+
+  private String token;
+
+  private boolean authHelper(String action, String email, String password) {
+    String res = finishRequest(initRequest(String.join("/", new String[] { AUTH_ENDPOINT, action, email, password }), "POST"));
+    if (res == null || !res.contains("token=")) {
+      token = null;
+      return false;
+    }
+    token = res.split("=")[1];
+    return true;
+  }
+
+  public boolean signup(String email, String password) {
+    return authHelper("signup", email, password);
+  }
+
+  public boolean login(String email, String password) {
+    return authHelper("login", email, password);
+  }
+
+  public String getToken() {
+    return token;
+  }
+
+  public boolean checkToken(String tok) {
+    String res = finishRequest(initRequest(AUTH_ENDPOINT + "/check/" + tok + "/null", "POST"));
+    if (res == null || !res.equals("Success.")) return false;
+    token = tok;
+    return true;
+  }
+
+  /*
+  public boolean enableAutoLogin() {
+    try {
+      byte[] mac = NetworkInterface.getHardwareAddress();
+      String res = finishRequest(initRequest(AUTH_ENDPOINT + "/auto/" + token + "/" + new String(mac, StandardCharsets.UTF_8)), "POST");
+      return res.equals("Success.");
+    } catch (Exception e) {
+      return false;
+    }
+  }
+  */
 
   /**
    * Fetch all past questions and responses via a GET request.

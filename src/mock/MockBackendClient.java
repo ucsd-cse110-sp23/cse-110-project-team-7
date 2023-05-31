@@ -8,6 +8,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -17,6 +19,48 @@ import org.json.JSONTokener;
  *   the application's REST API backend.
  */
 class MockBackendClient implements IBackendClient {
+  Set<String> users = new HashSet<>();
+  String token = null;
+
+  /**
+   * Sign up for the service using an email and password.
+   */
+  public boolean signup(String email, String password) {
+    for (String user : users) {
+      if (user.equals(email)) {
+        return false;
+      }
+    }
+    users.add(email);
+    token = email;
+    return true;
+  }
+
+  /**
+   * Log in to the service using an email and password.
+   */
+  public boolean login(String email, String password) {
+    if (!users.contains(email)) {
+      return false;
+    }
+    token = email;
+    return true;
+  }
+
+  /**
+   * Return a fake account token.
+   */
+  public String getToken() {
+    return token;
+  }
+
+  /**
+   * Validate the user's account token.
+   */
+  public boolean checkToken(String tok) {
+    return (tok != null);
+  }
+
   /**
    * Fetch all past questions and responses via a GET request.
    */

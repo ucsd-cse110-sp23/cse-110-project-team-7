@@ -37,10 +37,20 @@ class SayItAssistantServer {
           new InetSocketAddress(HOST, PORT),
           0
       );
-      HttpHandler handler = (args.length > 0 && args[0].equals("--test"))
-          ? new PromptHandler(storage, new MockWhisper(), new MockChatGPT())
-          : new PromptHandler(storage);
-      server.createContext("/prompt", handler);
+
+      if (args.length > 0 && args[0].equals("--test")) {
+        server.createContext("/prompt", new PromptHandler(storage, new MockWhisper(), new MockChatGPT()));
+      } else {
+        server.createContext("/prompt", new PromptHandler(storage));
+      }
+
+      AuthHandler auth = new AuthHandler();
+      if (!auth.ok()) {
+        System.err.println("Error: Failed to connect to database.");
+        System.exit(2);
+      }
+      server.createContext("/auth", auth);
+
       server.setExecutor(threadPoolExecutor);
       server.start();
 
