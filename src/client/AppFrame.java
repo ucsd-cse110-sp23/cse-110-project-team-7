@@ -126,24 +126,9 @@ class AppFrame extends JFrame {
    *   respective subject calls when it updates.
    */
   void addListeners() {
-    taskbar.deleteQuestionButton.addActionListener((ActionEvent e) -> {
-      if (selected == null || !client.deleteQuestion(selected.id)) {
-        return;
-      }
-
-      JButton toRemove = buttonMap.get(selected.id.toString());
-      Container parent = toRemove.getParent();
-      parent.remove(toRemove);
-      parent.revalidate();
-      parent.repaint();
-      buttonMap.remove(selected.id.toString());
-      selected = null;
-
-      convo.show(null);
-    });
-    taskbar.newQuestionButton.addActionListener((ActionEvent e) -> {
+    taskbar.startButton.addActionListener((ActionEvent e) -> {
       recording = !recording;
-      taskbar.newQuestionButton.setText(recording ? "Stop Recording" : "New Question");
+      taskbar.startButton.setText(recording ? "Stop" : "Start");
 
       if (recording) {
         recorder.start(stream);
@@ -200,24 +185,6 @@ class AppFrame extends JFrame {
           */
         });
         networkThread.start();
-      }
-    });
-    taskbar.clearAllButton.addActionListener((ActionEvent e) -> {
-      if (!client.clearHistory()) {
-        return;
-      }
-
-      Container parent = null;
-      for (JButton button : buttonMap.values()) {
-        if (parent == null) {
-          parent = button.getParent();
-        }
-        parent.remove(button);
-      }
-      if (parent != null) {
-        convo.show(null);
-        parent.revalidate();
-        parent.repaint();
       }
     });
 
