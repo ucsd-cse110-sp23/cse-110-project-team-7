@@ -74,9 +74,9 @@ class MockBackendClient implements IBackendClient {
     return "POST";
   }
   /**
-   * Ask a new question by POSTing a File with voice data.
+   * Ask a new question by POSTing a question string.
    */
-  public HistoryItem askQuestion(File stream) {
+  public HistoryItem askQuestion(String question) {
     return new HistoryItem("What is 2 plus 2?", "4");
   }
 

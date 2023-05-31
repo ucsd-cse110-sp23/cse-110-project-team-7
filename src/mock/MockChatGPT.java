@@ -8,6 +8,7 @@ class MockChatGPT implements IChatGPT {
   public String ask(String question) {
     switch (counter++) {
       case 0:
+      case 2:
         return "2 plus 2 equals 4.";
       case 1:
         return "My favorite color is blue.";

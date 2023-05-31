@@ -136,53 +136,52 @@ class AppFrame extends JFrame {
         recorder.stop();
 
         Thread networkThread = new Thread(() -> {
-
           String type = client.questionType(stream);
-          System.out.println(type);
-          if (type.equals("POST")) {
-            HistoryItem item = client.askQuestion(stream);
-            displayItem(item);
-            convo.show(item);
-            selected = item;
-          } else if (type.equals("DELETE")) {
-            if (selected == null || !client.deleteQuestion(selected.id)) {
-              return;
-            }
-      
-            JButton toRemove = buttonMap.get(selected.id.toString());
-            Container parent = toRemove.getParent();
-            parent.remove(toRemove);
-            parent.revalidate();
-            parent.repaint();
-            buttonMap.remove(selected.id.toString());
-            selected = null;
-      
-            convo.show(null); 
-          } else if (type.equals("CLEAR")) {
-            if (!client.clearHistory()) {
-              return;
-            }
-      
-            Container parent = null;
-            for (JButton button : buttonMap.values()) {
-              if (parent == null) {
-                parent = button.getParent();
-              }
-              parent.remove(button);
-            }
-            if (parent != null) {
-              convo.show(null);
-              parent.revalidate();
-              parent.repaint();
-            } 
+          if (type == null) {
+            return;
           }
 
-          /* 
-          HistoryItem item = client.askQuestion(stream);
-          displayItem(item);
-          convo.show(item);
-          selected = item;
-          */
+          Container parent = null;
+          switch (type.substring(0, 6)) {
+            case "POST  ":
+              HistoryItem item = client.askQuestion(type.substring(6));
+              displayItem(item);
+              convo.show(item);
+              selected = item;
+              break;
+            case "DELETE":
+              if (selected == null || !client.deleteQuestion(selected.id)) {
+                return;
+              }
+      
+              JButton toRemove = buttonMap.get(selected.id.toString());
+              parent = toRemove.getParent();
+              parent.remove(toRemove);
+              parent.revalidate();
+              parent.repaint();
+              buttonMap.remove(selected.id.toString());
+              selected = null;
+      
+              convo.show(null); 
+              break;
+            case "CLEAR ":
+              if (!client.clearHistory()) {
+                return;
+              }
+        
+              for (JButton button : buttonMap.values()) {
+                if (parent == null) {
+                  parent = button.getParent();
+                }
+                parent.remove(button);
+              }
+              if (parent != null) {
+                convo.show(null);
+                parent.revalidate();
+                parent.repaint();
+              }
+              break;
+          }
         });
         networkThread.start();
       }

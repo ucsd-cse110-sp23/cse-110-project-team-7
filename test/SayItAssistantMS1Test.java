@@ -70,7 +70,7 @@ class SayItAssistantMS1Test {
 
     File file = new File("question.wav");
     String question = mockWhisper.speechToText(file);
-    assertEquals("What is 2 plus 2?", question);
+    assertEquals("Question. What is 2 plus 2?", question);
 
     String response = mockChatGPT.ask(question);
     assertEquals("2 plus 2 equals 4.", response);
@@ -83,14 +83,14 @@ class SayItAssistantMS1Test {
 
     File file = new File("question.wav");
     String question = mockWhisper.speechToText(file);
-    assertEquals("What is 2 plus 2?", question);
+    assertEquals("Question. What is 2 plus 2?", question);
 
     String response = mockChatGPT.ask(question);
     assertEquals("2 plus 2 equals 4.", response);
 
     file = new File("question.wav");
     question = mockWhisper.speechToText(file);
-    assertEquals("What is your favorite color?", question);
+    assertEquals("Question. What is your favorite color?", question);
 
     response = mockChatGPT.ask(question);
     assertEquals("My favorite color is blue.", response);
@@ -308,7 +308,7 @@ class SayItAssistantMS1Test {
     Storage storage = new Storage("[]");
     HistoryItem twoPlusTwo = storage.add("What is 2 plus 2?", "4");
 
-    PromptHandler handler = new PromptHandler(storage);
+    PromptHandler handler = new PromptHandler(storage, new MockChatGPT(), new Prompt());
 
     // Query all
     assertNotNull(handler.handleGet(null));
@@ -328,7 +328,7 @@ class SayItAssistantMS1Test {
   @Test
   void testHandlerDelete() {
     Storage storage = new Storage("[]");
-    PromptHandler handler = new PromptHandler(storage);
+    PromptHandler handler = new PromptHandler(storage, new MockChatGPT(), new Prompt());
 
     // Delete non-existent item(s)
     assertNull(handler.handleDelete(UUID.randomUUID().toString()));
@@ -357,8 +357,7 @@ class SayItAssistantMS1Test {
 
     assertNull(concreteClient.askQuestion(null));
 
-    File f = new File("question.wav");
-    assertNull(concreteClient.askQuestion(f));
+    assertNull(concreteClient.askQuestion("What is 2 plus 2?"));
 
     HistoryItem hist = mockClient.askQuestion(null);
     assertNotNull(hist);
@@ -389,8 +388,7 @@ class SayItAssistantMS1Test {
     ArrayList<HistoryItem> hist = client.getHistory();
     assertNotNull(hist);
 
-    File f = new File("test/silent.wav");
-    HistoryItem item = client.askQuestion(f);
+    HistoryItem item = client.askQuestion("What is 2 plus 2?");
     assertNotNull(item);
   }
 

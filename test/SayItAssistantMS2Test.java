@@ -31,12 +31,12 @@ class SayItAssistantMS2Test {
     ArrayList<HistoryItem> empty = new ArrayList<>();
     assertEquals(empty, client.getHistory());
 
-    HistoryItem item = client.askQuestion(new File("test/silent.wav"));
+    HistoryItem item = client.askQuestion("What is 2 plus 2?");
     assertNotNull(item);
     assertEquals("What is 2 plus 2?", item.question);
     assertEquals("2 plus 2 equals 4.", item.response);
 
-    item = client.askQuestion(new File("test/silent.wav"));
+    item = client.askQuestion("What is your favorite color?");
     assertNotNull(item);
     assertEquals("What is your favorite color?", item.question);
     assertEquals("My favorite color is blue.", item.response);
@@ -86,6 +86,31 @@ class SayItAssistantMS2Test {
 
     verification = password;
     assertTrue(client.signup("helen@gmail.com", password));
+  }
+
+  /* MS2 User Story 3 Tests (BDD Scenarios) */
+  @Test
+  void testMS2Story3_BDD1() {
+    IBackendClient concreteClient = new HttpBackendClient();
+    IBackendClient mockClient = new MockBackendClient();
+
+    assertTrue(concreteClient.connected());
+    assertTrue(mockClient.connected());
+
+    File f = new File("test/silent.wav");
+    String concreteType = concreteClient.questionType(f);
+    assertNotNull(concreteType);
+    assertEquals("POST", concreteType.substring(0, 4));
+    assertEquals("POST", mockClient.questionType(f));
+
+    HistoryItem concreteHist = concreteClient.askQuestion(concreteType.substring(6));
+    assertNotNull(concreteHist);
+    assertEquals("Question. What is 2 plus 2?", concreteHist.question);
+    assertEquals("2 plus 2 equals 4.", concreteHist.response);
+  }
+
+  @Test
+  void testMS2Story3_BDD2() {
   }
 
   /* MS2 User Story 7 Tests (BDD Scenarios) */

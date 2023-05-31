@@ -77,11 +77,11 @@ public class TypeHandler implements HttpHandler {
             String[] questionList = inquiry.split(" ");
       // find if request is question
             if(questionPattern.matcher(questionList[0]).find()) {
-                return "POST";
+                return "POST  " + inquiry;
             } else if (deletePattern.matcher(questionList[0]).find()) {
                 return "DELETE";
             } else if (clearPattern.matcher(questionList[0]).find()) {
-                return "CLEAR";
+                return "CLEAR ";
             }
             return null;
 

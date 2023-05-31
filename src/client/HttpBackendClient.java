@@ -99,12 +99,12 @@ class HttpBackendClient implements IBackendClient {
   }
 
   /**
-   * Ask a new question by POSTing a File with voice data.
+   * Ask a new question by POSTing a question string.
    */
-  public HistoryItem askQuestion(File stream) {
+  public HistoryItem askQuestion(String query) {
     try {
-      HttpURLConnection conn = initRequest(API_ENDPOINT, "POST");
-      String json = finishRequest(conn);
+      String encoded = URLEncoder.encode(query, "UTF-8");
+      String json = finishRequest(initRequest(API_ENDPOINT + "/" + encoded, "POST"));
 
       JSONTokener tok = new JSONTokener(json);
       JSONObject obj = new JSONObject(tok);

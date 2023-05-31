@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.util.UUID;
 import org.json.JSONObject;
@@ -51,7 +52,7 @@ class PromptHandler implements HttpHandler {
         response = handleGet(query);
         break;
       case "POST":
-        response = handlePost(query, exchange);
+        response = handlePost(query);
         break;
       case "DELETE":
         response = handleDelete(query);
@@ -99,12 +100,12 @@ class PromptHandler implements HttpHandler {
    * When a POST request is made, retrieve the given file
    *   and perform Whisper/ChatGPT operations.
    */
-  String handlePost(String query, HttpExchange t) {
+  String handlePost(String query) {
     try {
-      String question = prompt.getPrompt();
-      System.out.println(question);
+      String promptQ = prompt.getPrompt();
+      String question = URLDecoder.decode(query, "UTF-8");
       String response = chatGPT.ask(question);
-      
+
       if (response == null) {
         return null;
       }
