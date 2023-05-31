@@ -19,18 +19,8 @@ class SayItAssistantServer {
     }
 
     try {
-      Storage storage;
       if (args.length > 0 && args[0].equals("--test")) {
         System.out.println("Launching server in test mode.");
-
-        storage = new Storage("[]");
-      } else {
-        storage = new Storage();
-
-        // When the program shuts down, save storage to file
-        Runtime.getRuntime().addShutdownHook(
-          new Thread(() -> storage.save())
-        );
       }
 
       HttpServer server = HttpServer.create(
@@ -38,24 +28,30 @@ class SayItAssistantServer {
           0
       );
 
-      Prompt prompt = new Prompt();
-      if (args.length > 0 && args[0].equals("--test")) {
-        server.createContext("/prompt", new PromptHandler(
-            storage, new MockChatGPT(), prompt)
-        );
-        server.createContext("/type", new TypeHandler(prompt, new MockWhisper()));
-      } else {
-        server.createContext("/prompt", new PromptHandler(storage, prompt));
-        server.createContext("/type", new TypeHandler(prompt, new Whisper()));
-      }
-
-
       AuthHandler auth = new AuthHandler();
       if (!auth.ok()) {
         System.err.println("Error: Failed to connect to database.");
         System.exit(2);
       }
       server.createContext("/auth", auth);
+
+      PromptHandler pHandler;
+      Prompt prompt = new Prompt();
+      if (args.length > 0 && args[0].equals("--test")) {
+        pHandler = new PromptHandler(
+            new MockChatGPT(), prompt, false
+        );
+        server.createContext("/type", new TypeHandler(prompt, new MockWhisper()));
+      } else {
+        pHandler = new PromptHandler(prompt, false);
+        server.createContext("/type", new TypeHandler(prompt, new Whisper()));
+      }
+
+      if (pHandler == null || !pHandler.ok()) {
+        System.err.println("Error: Failed to connect to database.");
+        System.exit(3);
+      }
+      server.createContext("/prompt", pHandler);
 
       ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
       server.setExecutor(threadPoolExecutor);

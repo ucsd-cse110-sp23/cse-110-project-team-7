@@ -78,7 +78,7 @@ class HttpBackendClient implements IBackendClient {
    */
   public ArrayList<HistoryItem> getHistory() {
     Storage s = new Storage("[]");
-    String history = finishRequest(initRequest(API_ENDPOINT, "GET"));
+    String history = finishRequest(initRequest(API_ENDPOINT + "/" + token, "GET"));
     if (history == null) {
       return null;
     }
@@ -88,7 +88,7 @@ class HttpBackendClient implements IBackendClient {
 
   public String questionType(File stream) {
     try {
-      HttpURLConnection conn = initRequest(TYPE_ENDPOINT, "POST");
+      HttpURLConnection conn = initRequest(TYPE_ENDPOINT + "/" + token, "POST");
       OutputStream out = conn.getOutputStream();
       Files.copy(stream.toPath(), out);
       String type = finishRequest(conn);
@@ -104,7 +104,7 @@ class HttpBackendClient implements IBackendClient {
   public HistoryItem askQuestion(String query) {
     try {
       String encoded = URLEncoder.encode(query, "UTF-8");
-      String json = finishRequest(initRequest(API_ENDPOINT + "/" + encoded, "POST"));
+      String json = finishRequest(initRequest(API_ENDPOINT + "/" + token + "/" + encoded, "POST"));
 
       JSONTokener tok = new JSONTokener(json);
       JSONObject obj = new JSONObject(tok);
@@ -139,14 +139,14 @@ class HttpBackendClient implements IBackendClient {
     if (id == null) {
       return false;
     }
-    return delete("/" + id.toString());
+    return delete("/" + token + "/" + id.toString());
   }
 
   /**
    * Clear the entire question/response history.
    */
   public boolean clearHistory() {
-    return delete("");
+    return delete("/" + token);
   }
 
   /**

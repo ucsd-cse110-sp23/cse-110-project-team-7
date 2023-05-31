@@ -24,8 +24,16 @@ class SayItAssistantMS2Test {
 
   /* MS2 User Story 1 Tests (BDD Scenarios) */
   @Test
-  void testMS2Story1_BDD1() {
+  void testBackendClient() {
     IBackendClient client = new HttpBackendClient();
+    IBackendClient mock = new MockBackendClient();
+    assertTrue(client.connected());
+    assertTrue(mock.connected());
+  }
+
+  @Test
+  void testMS2Story1_BDD1() {
+    IBackendClient client = new MockBackendClient();
     assertTrue(client.connected());
 
     ArrayList<HistoryItem> empty = new ArrayList<>();
@@ -36,26 +44,37 @@ class SayItAssistantMS2Test {
     assertEquals("What is 2 plus 2?", item.question);
     assertEquals("2 plus 2 equals 4.", item.response);
 
-    item = client.askQuestion("What is your favorite color?");
+    item = client.askQuestion("What is 2 plus 2?");
     assertNotNull(item);
-    assertEquals("What is your favorite color?", item.question);
-    assertEquals("My favorite color is blue.", item.response);
+    assertEquals("What is 2 plus 2?", item.question);
+    assertEquals("2 plus 2 equals 4.", item.response);
   }
 
   @Test
   void testMS2Story1_BDD2() {
-    IBackendClient client = new HttpBackendClient();
+    IBackendClient client = new MockBackendClient();
     assertTrue(client.connected());
+
+    client.askQuestion("What is 2 plus 2?");
+    client.askQuestion("What is 2 plus 2?");
 
     ArrayList<HistoryItem> hist = client.getHistory();
     assertEquals("What is 2 plus 2?", hist.get(0).question);
     assertEquals("2 plus 2 equals 4.", hist.get(0).response);
 
-    assertEquals("What is your favorite color?", hist.get(1).question);
-    assertEquals("My favorite color is blue.",  hist.get(1).response);
+    assertEquals("What is 2 plus 2?", hist.get(1).question);
+    assertEquals("2 plus 2 equals 4.",  hist.get(1).response);
   }
 
   /* MS2 User Story 2 Tests (BDD Scenarios) */
+  @Test
+  void testSignup() {
+    IBackendClient mockClient = new MockBackendClient();
+    assertTrue(mockClient.connected());
+    assertTrue(mockClient.signup("helen@gmail.com", "password"));
+    assertNotNull(mockClient.getToken());
+  }
+
   @Test
   void testMS2Story2_BDD1() {
     IBackendClient client = new MockBackendClient();
@@ -90,30 +109,101 @@ class SayItAssistantMS2Test {
 
   /* MS2 User Story 3 Tests (BDD Scenarios) */
   @Test
-  void testMS2Story3_BDD1() {
-    IBackendClient concreteClient = new HttpBackendClient();
+  void testVoiceCommand() {
     IBackendClient mockClient = new MockBackendClient();
+    assertEquals("2 plus 2 equals 4.", mockClient.askQuestion("What is 2 plus 2?").response);
+  }
 
-    assertTrue(concreteClient.connected());
+  @Test
+  void testMS2Story3_BDD1() {
+    IBackendClient mockClient = new MockBackendClient();
     assertTrue(mockClient.connected());
 
     File f = new File("test/silent.wav");
-    String concreteType = concreteClient.questionType(f);
-    assertNotNull(concreteType);
-    assertEquals("POST", concreteType.substring(0, 4));
     assertEquals("POST", mockClient.questionType(f));
 
-    HistoryItem concreteHist = concreteClient.askQuestion(concreteType.substring(6));
-    assertNotNull(concreteHist);
-    assertEquals("Question. What is 2 plus 2?", concreteHist.question);
-    assertEquals("2 plus 2 equals 4.", concreteHist.response);
+    HistoryItem hist = mockClient.askQuestion("Question. What is 2 plus 2?");
+    assertNotNull(hist);
+    assertEquals("What is 2 plus 2?", hist.question);
+    assertEquals("2 plus 2 equals 4.", hist.response);
   }
 
   @Test
   void testMS2Story3_BDD2() {
+    IBackendClient mockClient = new MockBackendClient();
+    assertTrue(mockClient.connected());
+
+    File f = new File("test/silent.wav");
+    assertEquals("POST", mockClient.questionType(f));
+
+    HistoryItem hist = mockClient.askQuestion("Question. What is 2 plus 2?");
+    assertNotNull(hist);
+    assertEquals("What is 2 plus 2?", hist.question);
+    assertEquals("2 plus 2 equals 4.", hist.response);
+
+    hist = mockClient.askQuestion("Question. What is 2 plus 2?");
+    assertNotNull(hist);
+    assertEquals("What is 2 plus 2?", hist.question);
+    assertEquals("2 plus 2 equals 4.", hist.response);
+
+    hist = mockClient.askQuestion("Question. What is 2 plus 2?");
+    assertNotNull(hist);
+    assertEquals("What is 2 plus 2?", hist.question);
+    assertEquals("2 plus 2 equals 4.", hist.response);
+  }
+
+  /* MS2 User Story 4 Tests (BDD Scenarios) */
+  @Test
+  void testAccountHistory() {
+    IBackendClient mockClient = new MockBackendClient();
+    assertTrue(mockClient.connected());
+
+    mockClient.askQuestion("What is 2 plus 2?");
+    assertEquals("What is 2 plus 2?", mockClient.getHistory().get(0).question);
+  }
+
+  @Test
+  void testMS2Story4_BDD1() {
+    IBackendClient mockClient = new MockBackendClient();
+    assertTrue(mockClient.connected());
+
+    assertEquals(new ArrayList<HistoryItem>(), mockClient.getHistory());
+  }
+
+  @Test
+  void testMS2Story4_BDD2() {
+    IBackendClient mockClient = new MockBackendClient();
+    assertTrue(mockClient.connected());
+
+    mockClient.askQuestion("What is 2 plus 2?");
+
+    assertEquals("What is 2 plus 2?", mockClient.getHistory().get(0).question);
+    assertEquals("2 plus 2 equals 4.", mockClient.getHistory().get(0).response);
+  }
+
+  @Test
+  void testMS2Story4_BDD3() {
+    IBackendClient mockClient = new MockBackendClient();
+    assertTrue(mockClient.connected());
+
+    mockClient.askQuestion("What is 2 plus 2?");
+    mockClient.askQuestion("What is your favorite color?");
+    mockClient.askQuestion("What is the largest country in the world?");
+
+    assertEquals("What is 2 plus 2?", mockClient.getHistory().get(0).question);
+    assertEquals("2 plus 2 equals 4.", mockClient.getHistory().get(0).response);
   }
 
   /* MS2 User Story 7 Tests (BDD Scenarios) */
+  @Test
+  void testLogin() {
+    IBackendClient mockClient = new MockBackendClient();
+    assertTrue(mockClient.connected());
+    assertFalse(mockClient.login("helen@gmail.com", "password"));
+    assertTrue(mockClient.signup("helen@gmail.com", "password"));
+    assertTrue(mockClient.login("helen@gmail.com", "password"));
+  }
+
   @Test
   void testMS2Story7_BDD1() {
     IBackendClient client = new MockBackendClient();

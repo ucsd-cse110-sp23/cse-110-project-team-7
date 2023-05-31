@@ -3,7 +3,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import org.bson.Document;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -16,6 +18,21 @@ class Storage {
   static final String HISTORY_FILE = "history.json";
 
   ArrayList<HistoryItem> history = new ArrayList<>();
+
+  /**
+   * Given a List of BSON Documents, populate the
+   *   history list.
+   */
+  Storage(List<Document> items) {
+    for (Document d : items) {
+      add(
+          d.get("uuid", String.class),
+          d.get("timestamp", Long.class),
+          d.get("question", String.class),
+          d.get("response", String.class)
+      );
+    }
+  }
 
   /**
    * Given JSON text, populate the history list.
