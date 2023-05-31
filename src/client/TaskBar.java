@@ -6,7 +6,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 
 /**
- * Taskbar UI component with three buttons.
+ * Taskbar UI component.
  */
 class TaskBar extends JPanel {
   private static final int WIDTH = 640;
@@ -21,7 +21,7 @@ class TaskBar extends JPanel {
   Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 10);
 
   /**
-   * Instantiate a new panel with 3 equally-spaced buttons.
+   * Instantiate a new panel with a start button.
    */
   TaskBar() {
     setPreferredSize(new Dimension(WIDTH, HEIGHT));
