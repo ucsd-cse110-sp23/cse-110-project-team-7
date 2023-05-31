@@ -10,8 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 /**
  * Top-level UI frame that constructs a text region
@@ -201,31 +201,22 @@ class AppFrame extends JFrame {
           return;
         }
 
-        int ans = JOptionPane.showConfirmDialog(
-            null,
-            "Would you like to enable automatic login on this computer?",
-            "SayIt Assistant",
-            JOptionPane.YES_NO_OPTION
-        );
-        if (ans == 0) {
-          try {
-            PrintWriter writer = new PrintWriter(TOKEN_FILE);
-            writer.print(client.getToken());
-            writer.close();
-          } catch (Exception ex) {
-            JOptionPane.showMessageDialog(
-                null,
-                "Failed to enable automatic login.",
-                "SayIt Assistant Error",
-                JOptionPane.ERROR_MESSAGE
-            );
-          }
-        }
-
+        doAutoLogin();
         mainView(true);
       });
       flow.loginDone.addActionListener((ActionEvent e) -> {
-        /* TODO: Implement */
+        if (!client.login(flow.getEmail(), flow.getPassword())) {
+          JOptionPane.showMessageDialog(
+              null,
+              connected ? "Invalid email or password." : "Failed to reach server.",
+              "SayIt Assistant Error",
+              JOptionPane.ERROR_MESSAGE
+          );
+          return;
+        }
+
+        doAutoLogin();
+        mainView(true);
       });
     }
   }
@@ -233,8 +224,8 @@ class AppFrame extends JFrame {
   /**
    * Set up the main application view, after signup/login.
    */
-  private void mainView(boolean has_flow) {
-    if (has_flow) {
+  private void mainView(boolean hasFlow) {
+    if (hasFlow) {
       remove(flow);
     }
 
@@ -249,5 +240,32 @@ class AppFrame extends JFrame {
     add(taskbar, BorderLayout.SOUTH);
     revalidate();
     repaint();
+  }
+
+  /**
+   * Helper for prompting the user to enable automatic
+   *   login on this computer.
+   */
+  private void doAutoLogin() {
+    int ans = JOptionPane.showConfirmDialog(
+        null,
+        "Would you like to enable automatic login on this computer?",
+        "SayIt Assistant",
+        JOptionPane.YES_NO_OPTION
+    );
+    if (ans == 0) {
+      try {
+        PrintWriter writer = new PrintWriter(TOKEN_FILE);
+        writer.print(client.getToken());
+        writer.close();
+      } catch (Exception ex) {
+        JOptionPane.showMessageDialog(
+            null,
+            "Failed to enable automatic login.",
+            "SayIt Assistant Error",
+            JOptionPane.ERROR_MESSAGE
+        );
+      }
+    }
   }
 }

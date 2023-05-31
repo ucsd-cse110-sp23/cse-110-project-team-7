@@ -10,22 +10,16 @@ To compile the source, run:
 $ make
 ```
 
-To start the backend server with a custom API token, run:
+To start the backend server using the included API token, run:
 
 ```
-$ OPENAI_TOKEN="[your OpenAI token]" make server
+$ make server
 ```
 
 Then, start the frontend in a separate terminal window with:
 
 ```
 $ make client
-```
-
-To start both at once using the included API token (for MS1 demo/turn-in purposes), run:
-
-```
-$ make demo
 ```
 
 ## Testing and Linting
