@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.util.UUID;
 import org.json.JSONObject;
@@ -15,19 +16,18 @@ import org.json.JSONObject;
  *   the GET, POST, and DELETE methods.
  */
 class PromptHandler implements HttpHandler {
-  private static final String QUESTION_FILE = "question.wav";
   private Storage storage;
-  private IWhisper whisper;
   private IChatGPT chatGPT;
+  private IPrompt prompt;
 
-  PromptHandler(Storage s, IWhisper w, IChatGPT c) {
+  PromptHandler(Storage s, IChatGPT c, IPrompt p) {
     storage = s;
-    whisper = w;
     chatGPT = c;
+    prompt = p;
   }
 
-  PromptHandler(Storage s) {
-    this(s, new Whisper(), new ChatGPT());
+  PromptHandler(Storage s, IPrompt p) {
+    this(s, new ChatGPT(), p);
   }
 
   /**
@@ -52,7 +52,7 @@ class PromptHandler implements HttpHandler {
         response = handleGet(query);
         break;
       case "POST":
-        response = handlePost(query, exchange);
+        response = handlePost(query);
         break;
       case "DELETE":
         response = handleDelete(query);
@@ -100,24 +100,12 @@ class PromptHandler implements HttpHandler {
    * When a POST request is made, retrieve the given file
    *   and perform Whisper/ChatGPT operations.
    */
-  String handlePost(String query, HttpExchange t) {
+  String handlePost(String query) {
     try {
-      FileOutputStream out = new FileOutputStream(QUESTION_FILE);
-      InputStream ios = t.getRequestBody();
-      int i;
-      while ((i = ios.read()) != -1) {
-        out.write(i);
-      }
-      out.close();
-
-      File f = new File(QUESTION_FILE);
-      String question = whisper.speechToText(f);
-      f.delete();
-      if (question == null) {
-        return null;
-      }
-      
+      String promptQ = prompt.getPrompt();
+      String question = URLDecoder.decode(query, "UTF-8");
       String response = chatGPT.ask(question);
+
       if (response == null) {
         return null;
       }
@@ -131,6 +119,7 @@ class PromptHandler implements HttpHandler {
       obj.put("response", response);
       return obj.toString();
     } catch (Exception e) {
+      System.out.println("Error with post request");
       return null;
     }
   }

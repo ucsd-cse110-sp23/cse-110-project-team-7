@@ -25,7 +25,7 @@ bin/SayItAssistantMS2Test.class: bin/SayItAssistantServer.class test/*.java
 	javac -cp $(TESTCLASSPATH) -d bin test/*.java
 
 test: bin/SayItAssistantMS2Test.class
-	$(MOCK_ENV) java -cp $(TESTCLASSPATH) org.junit.platform.console.ConsoleLauncher -c SayItAssistantMS1Test -c SayItAssistantMS2Test --reports-dir=reports
+	$(MOCK_ENV) java -cp $(TESTCLASSPATH) org.junit.platform.console.ConsoleLauncher -c SayItAssistantMS1Test -c SayItAssistantMS2Test --reports-dir=reports 2> /dev/null
 
 check:
 	java -jar $(CHECKSTYLE) -c checkstyle.xml src/*

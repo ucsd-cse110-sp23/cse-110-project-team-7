@@ -21,6 +21,8 @@ class SayItAssistantServer {
     try {
       Storage storage;
       if (args.length > 0 && args[0].equals("--test")) {
+        System.out.println("Launching server in test mode.");
+
         storage = new Storage("[]");
       } else {
         storage = new Storage();
@@ -36,13 +38,17 @@ class SayItAssistantServer {
           0
       );
 
+      Prompt prompt = new Prompt();
       if (args.length > 0 && args[0].equals("--test")) {
         server.createContext("/prompt", new PromptHandler(
-            storage, new MockWhisper(), new MockChatGPT())
+            storage, new MockChatGPT(), prompt)
         );
+        server.createContext("/type", new TypeHandler(prompt, new MockWhisper()));
       } else {
-        server.createContext("/prompt", new PromptHandler(storage));
+        server.createContext("/prompt", new PromptHandler(storage, prompt));
+        server.createContext("/type", new TypeHandler(prompt, new Whisper()));
       }
+
 
       AuthHandler auth = new AuthHandler();
       if (!auth.ok()) {

@@ -22,7 +22,9 @@ interface IBackendClient {
 
   public ArrayList<HistoryItem> getHistory();
 
-  public HistoryItem askQuestion(File stream);
+  public String questionType(File stream);
+
+  public HistoryItem askQuestion(String question);
 
   public boolean deleteQuestion(UUID id);
 

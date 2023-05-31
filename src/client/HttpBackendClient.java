@@ -28,6 +28,7 @@ import org.json.JSONTokener;
 class HttpBackendClient implements IBackendClient {
   private static final String AUTH_ENDPOINT = "http://localhost:8080/auth";
   private static final String API_ENDPOINT = "http://localhost:8080/prompt";
+  private static final String TYPE_ENDPOINT = "http://localhost:8080/type";
 
   private String token;
 
@@ -85,15 +86,25 @@ class HttpBackendClient implements IBackendClient {
     return s.history;
   }
 
-  /**
-   * Ask a new question by POSTing a File with voice data.
-   */
-  public HistoryItem askQuestion(File stream) {
+  public String questionType(File stream) {
     try {
-      HttpURLConnection conn = initRequest(API_ENDPOINT, "POST");
+      HttpURLConnection conn = initRequest(TYPE_ENDPOINT, "POST");
       OutputStream out = conn.getOutputStream();
       Files.copy(stream.toPath(), out);
-      String json = finishRequest(conn);
+      String type = finishRequest(conn);
+      return type;
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
+  /**
+   * Ask a new question by POSTing a question string.
+   */
+  public HistoryItem askQuestion(String query) {
+    try {
+      String encoded = URLEncoder.encode(query, "UTF-8");
+      String json = finishRequest(initRequest(API_ENDPOINT + "/" + encoded, "POST"));
 
       JSONTokener tok = new JSONTokener(json);
       JSONObject obj = new JSONObject(tok);

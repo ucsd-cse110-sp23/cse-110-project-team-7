@@ -10,9 +10,9 @@ class MockWhisper implements IWhisper {
   public String speechToText(File file) {
     switch (counter++) {
       case 0:
-        return "What is 2 plus 2?";
+        return "Question. What is 2 plus 2?";
       case 1:
-        return "What is your favorite color?";
+        return "Question. What is your favorite color?";
       default:
         return null;
     }
