@@ -6,7 +6,12 @@ on:
       - completed
 jobs:
   report:
-    permissions: write-all
+    permissions:
+      statuses: write
+      checks: write
+      contents: write
+      pull-requests: write
+      actions: write
     runs-on: ubuntu-latest
     steps:
     - uses: dorny/test-reporter@v1
