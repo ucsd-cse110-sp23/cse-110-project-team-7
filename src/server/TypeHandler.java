@@ -70,10 +70,13 @@ public class TypeHandler implements HttpHandler {
             String inquiry = whisper.speechToText(f);
             f.delete();
             this.prompt.updatePrompt(inquiry);
+            System.out.println(inquiry);
 
             Pattern questionPattern = Pattern.compile("Question", Pattern.CASE_INSENSITIVE);
             Pattern deletePattern = Pattern.compile("Delete", Pattern.CASE_INSENSITIVE);
             Pattern clearPattern = Pattern.compile("Clear", Pattern.CASE_INSENSITIVE);
+            Pattern setEmailPattern = Pattern.compile("Set", Pattern.CASE_INSENSITIVE);
+            Pattern setupEmailPattern = Pattern.compile("Setup", Pattern.CASE_INSENSITIVE);
             String[] questionList = inquiry.split(" ");
       // find if request is question
             if(questionPattern.matcher(questionList[0]).find()) {
@@ -82,6 +85,9 @@ public class TypeHandler implements HttpHandler {
                 return "DELETE";
             } else if (clearPattern.matcher(questionList[0]).find()) {
                 return "CLEAR ";
+            } else if (setupEmailPattern.matcher(questionList[0]).find() 
+            || setEmailPattern.matcher(questionList[0]).find()) {
+                return "SETUP ";
             }
             return null;
 
