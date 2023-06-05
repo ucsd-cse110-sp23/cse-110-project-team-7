@@ -28,6 +28,8 @@ interface IBackendClient {
 
   public boolean deleteQuestion(UUID id);
 
+  public boolean updateSendEmail(String email);
+
   public boolean clearHistory();
 
   public boolean connected();

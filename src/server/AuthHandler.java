@@ -114,7 +114,8 @@ class AuthHandler implements HttpHandler {
       .append("email", email)
       .append("password", hashPass(password))
       .append("history", new ArrayList<Document>())
-      .append("auto", new ArrayList<String>());
+      .append("auto", new ArrayList<String>())
+      .append("sendEmail", email);
     users.insertOne(doc);
     return "token=" + id.toString();
   }

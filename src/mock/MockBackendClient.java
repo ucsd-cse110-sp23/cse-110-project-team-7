@@ -97,6 +97,10 @@ class MockBackendClient implements IBackendClient {
     return true;
   }
 
+  public boolean updateSendEmail(String email) {
+    return true;
+  }
+
   /**
    * Returns whether the client is connected to the backend.
    */

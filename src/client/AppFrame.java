@@ -293,6 +293,13 @@ class AppFrame extends JFrame {
       );
     }
 
-
+    if(!client.updateSendEmail(email)) {
+      JOptionPane.showMessageDialog(
+        null,
+        "Server Error", 
+        "Error updatting email", 
+        JOptionPane.ERROR_MESSAGE
+      );
+    };
   }
 }
