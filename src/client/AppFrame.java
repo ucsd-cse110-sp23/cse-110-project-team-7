@@ -134,56 +134,7 @@ class AppFrame extends JFrame {
         recorder.start(stream);
       } else {
         recorder.stop();
-
-        Thread networkThread = new Thread(() -> {
-          String type = client.questionType(stream);
-          if (type == null) {
-            return;
-          }
-
-          Container parent = null;
-          switch (type.substring(0, 6)) {
-            case "POST  ":
-              HistoryItem item = client.askQuestion(type.substring(6));
-              displayItem(item);
-              convo.show(item);
-              selected = item;
-              break;
-            case "DELETE":
-              if (selected == null || !client.deleteQuestion(selected.id)) {
-                return;
-              }
-      
-              JButton toRemove = buttonMap.get(selected.id.toString());
-              parent = toRemove.getParent();
-              parent.remove(toRemove);
-              parent.revalidate();
-              parent.repaint();
-              buttonMap.remove(selected.id.toString());
-              selected = null;
-      
-              convo.show(null); 
-              break;
-            case "CLEAR ":
-              if (!client.clearHistory()) {
-                return;
-              }
-        
-              for (JButton button : buttonMap.values()) {
-                if (parent == null) {
-                  parent = button.getParent();
-                }
-                parent.remove(button);
-              }
-              if (parent != null) {
-                convo.show(null);
-                parent.revalidate();
-                parent.repaint();
-              }
-              break;
-          }
-        });
-        networkThread.start();
+        doAPIRequest();
       }
     });
 
@@ -276,5 +227,72 @@ class AppFrame extends JFrame {
         );
       }
     }
+  }
+
+  /**
+   * Helper for making API calls.
+   */
+  private void doAPIRequest() {
+    Thread networkThread = new Thread(() -> {
+      String id = (selected == null ? "" : selected.id.toString());
+      APIOperation op = client.sendVoice(stream, id);
+      if (op == null || !op.success) {
+        JOptionPane.showMessageDialog(
+            null,
+            "Failed to make request.",
+            "SayIt Assistant Error",
+            JOptionPane.ERROR_MESSAGE
+        );
+        return;
+      }
+
+      Container parent = null;
+      switch (op.command) {
+        case "question":
+        case "create":
+          HistoryItem item = HistoryItem.fromString(op.message);
+          displayItem(item);
+          convo.show(item);
+          selected = item;
+          break;
+        case "delete":
+          if (selected == null) {
+            return;
+          }
+  
+          JButton toRemove = buttonMap.get(id);
+          parent = toRemove.getParent();
+          parent.remove(toRemove);
+          parent.revalidate();
+          parent.repaint();
+          buttonMap.remove(id);
+          selected = null;
+  
+          convo.show(null); 
+          break;
+        case "clear":
+          for (JButton button : buttonMap.values()) {
+            if (parent == null) {
+              parent = button.getParent();
+            }
+            parent.remove(button);
+          }
+          if (parent != null) {
+            convo.show(null);
+            parent.revalidate();
+            parent.repaint();
+          }
+          break;
+        case "send":
+          JOptionPane.showMessageDialog(
+              null,
+              "Email successfully sent.",
+              "SayIt Assistant Error",
+              JOptionPane.INFORMATION_MESSAGE
+          );
+          break;
+      }
+    });
+    networkThread.start();
   }
 }

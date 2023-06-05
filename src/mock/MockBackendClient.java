@@ -51,10 +51,10 @@ class MockBackendClient implements IBackendClient {
   }
 
   /**
-   * Return a fake account token.
+   * Returns whether the client is connected to the backend.
    */
-  public String getToken() {
-    return token;
+  public boolean connected() {
+    return true;
   }
 
   /**
@@ -65,42 +65,23 @@ class MockBackendClient implements IBackendClient {
   }
 
   /**
+   * Return a fake account token.
+   */
+  public String getToken() {
+    return token;
+  }
+
+  /**
    * Fetch all past questions and responses via a GET request.
    */
   public ArrayList<HistoryItem> getHistory() {
     return history;
   }
 
-  public String questionType(File stream) {
-    return "POST";
-  }
   /**
    * Ask a new question by POSTing a question string.
    */
-  public HistoryItem askQuestion(String question) {
-    HistoryItem item = new HistoryItem("What is 2 plus 2?", "2 plus 2 equals 4.");
-    history.add(item);
-    return item;
-  }
-
-  /**
-   * Delete a single question based on its UUID.
-   */
-  public boolean deleteQuestion(UUID id) {
-    return true;
-  }
-
-  /**
-   * Clear the entire question/response history.
-   */
-  public boolean clearHistory() {
-    return true;
-  }
-
-  /**
-   * Returns whether the client is connected to the backend.
-   */
-  public boolean connected() {
-    return true;
+  public APIOperation sendVoice(File stream, String id) {
+    return null;
   }
 }

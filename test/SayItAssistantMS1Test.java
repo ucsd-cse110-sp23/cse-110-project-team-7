@@ -306,7 +306,7 @@ class SayItAssistantMS1Test {
   /* PromptHandler Tests */
   @Test
   void testHandlerGet() {
-    PromptHandler handler = new PromptHandler(new MockChatGPT(), new Prompt(), true);
+    PromptHandler handler = new PromptHandler(new MockChatGPT(), true);
     ArrayList<Document> list = new ArrayList<>();
     list.add(new Document()
         .append("uuid", "fake_id")
@@ -333,7 +333,7 @@ class SayItAssistantMS1Test {
 
   @Test
   void testHandlerDelete() {
-    PromptHandler handler = new PromptHandler(new MockChatGPT(), new Prompt(), true);
+    PromptHandler handler = new PromptHandler(new MockChatGPT(), true);
 
     ArrayList<Document> list = new ArrayList<>();
     Document user = new Document().append("history", list);

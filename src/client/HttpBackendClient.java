@@ -27,8 +27,7 @@ import org.json.JSONTokener;
  */
 class HttpBackendClient implements IBackendClient {
   private static final String AUTH_ENDPOINT = "http://localhost:8080/auth";
-  private static final String API_ENDPOINT = "http://localhost:8080/prompt";
-  private static final String TYPE_ENDPOINT = "http://localhost:8080/type";
+  private static final String API_ENDPOINT = "http://localhost:8080/api";
 
   private String token;
 
@@ -60,6 +59,13 @@ class HttpBackendClient implements IBackendClient {
     return authHelper("login", email, password);
   }
 
+  /**
+   * Return true if the backend is reachable, and false otherwise.
+   */
+  public boolean connected() {
+    return authHelper("connected", "", "");
+  }
+
   public String getToken() {
     return token;
   }
@@ -86,78 +92,23 @@ class HttpBackendClient implements IBackendClient {
     return s.history;
   }
 
-  public String questionType(File stream) {
+  /**
+   * Perform some CRUD operation by POSTing a file containing
+   *   voice data to the API.
+   */
+  public APIOperation sendVoice(File stream, String id) {
     try {
-      HttpURLConnection conn = initRequest(TYPE_ENDPOINT + "/" + token, "POST");
+      HttpURLConnection conn = initRequest(API_ENDPOINT + "/" + token, "POST");
       OutputStream out = conn.getOutputStream();
       Files.copy(stream.toPath(), out);
-      String type = finishRequest(conn);
-      return type;
+      String json = finishRequest(conn);
+
+      APIOperation op = new APIOperation();
+      op.parseJSON(json);
+
+      return op;
     } catch (Exception e) {
       return null;
-    }
-  }
-
-  /**
-   * Ask a new question by POSTing a question string.
-   */
-  public HistoryItem askQuestion(String query) {
-    try {
-      String encoded = URLEncoder.encode(query, "UTF-8");
-      String json = finishRequest(initRequest(API_ENDPOINT + "/" + token + "/" + encoded, "POST"));
-
-      JSONTokener tok = new JSONTokener(json);
-      JSONObject obj = new JSONObject(tok);
-      String id = obj.getString("uuid");
-      long timestamp = obj.getLong("timestamp");
-      String question = obj.getString("question");
-      String response = obj.getString("response");
-
-      return new HistoryItem(id, timestamp, question, response);
-    } catch (Exception e) {
-      return null;
-    }
-  }
-
-  /**
-   * Helper method for deleting something, whether it be
-   *   a specific question or all past questions/responses.
-   */
-  private boolean delete(String addendum) {
-    try {
-      String res = finishRequest(initRequest(API_ENDPOINT + addendum, "DELETE"));
-      return res.equals("Successfully deleted.");
-    } catch (Exception e) {
-      return false;
-    }
-  }
-
-  /**
-   * Delete a single question based on its UUID.
-   */
-  public boolean deleteQuestion(UUID id) {
-    if (id == null) {
-      return false;
-    }
-    return delete("/" + token + "/" + id.toString());
-  }
-
-  /**
-   * Clear the entire question/response history.
-   */
-  public boolean clearHistory() {
-    return delete("/" + token);
-  }
-
-  /**
-   * Return true if the backend is reachable, and false otherwise.
-   */
-  public boolean connected() {
-    try {
-      String res = finishRequest(initRequest(API_ENDPOINT, "TRACE"));
-      return res.equals("Successfully connected.");
-    } catch (Exception e) {
-      return false;
     }
   }
 

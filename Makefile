@@ -1,6 +1,6 @@
 all: bin/SayItAssistantServer.class bin/SayItAssistantClient.class
 
-CLASSPATH = lib/json-20230227.jar:lib/slf4j-api-2.0.7.jar:lib/slf4j-simple-2.0.7.jar:lib/mongodb-driver-core-4.10.0-alpha0.jar:lib/mongodb-driver-sync-4.10.0-alpha0.jar:lib/bson-4.10.0-alpha0.jar:bin
+CLASSPATH = lib/json-20230227.jar:lib/slf4j-api-2.0.7.jar:lib/slf4j-simple-2.0.7.jar:lib/mongodb-driver-core-4.10.0-alpha0.jar:lib/mongodb-driver-sync-4.10.0-alpha0.jar:lib/bson-4.10.0-alpha0.jar:lib/javax.mail.jar:lib/activation-1.1.1.jar:bin
 TESTCLASSPATH = $(CLASSPATH):lib/junit-platform-console-standalone-1.9.2.jar
 CHECKSTYLE = lib/checkstyle-10.10.0-all.jar
 

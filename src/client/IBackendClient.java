@@ -16,19 +16,13 @@ interface IBackendClient {
 
   public boolean login(String email, String password);
 
-  public String getToken();
+  public boolean connected();
 
   public boolean checkToken(String tok);
 
+  public String getToken();
+
   public ArrayList<HistoryItem> getHistory();
 
-  public String questionType(File stream);
-
-  public HistoryItem askQuestion(String question);
-
-  public boolean deleteQuestion(UUID id);
-
-  public boolean clearHistory();
-
-  public boolean connected();
+  public APIOperation sendVoice(File stream, String id);
 }

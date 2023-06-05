@@ -1,4 +1,6 @@
 import java.util.UUID;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 /**
  * A class representing a single entry in the question
@@ -42,5 +44,20 @@ class HistoryItem {
     } catch (Exception e) {
       id = UUID.randomUUID();
     }
+  }
+
+  /**
+   * Parse a JSON string and return a new HistoryItem.
+   */
+  static HistoryItem fromString(String json) {
+    JSONTokener tok = new JSONTokener(json);
+    JSONObject obj = new JSONObject(tok);
+
+    return new HistoryItem(
+        obj.getString("uuid"),
+        obj.getLong("timestamp"),
+        obj.getString("question"),
+        obj.getString("response")
+    );
   }
 }

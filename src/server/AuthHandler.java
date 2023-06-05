@@ -84,6 +84,9 @@ class AuthHandler implements HttpHandler {
       case "check":
         response = handleCheck(email);
         break;
+      case "connected":
+        response = "Successfully connected.";
+        break;
       default:
         response = null;
         break;

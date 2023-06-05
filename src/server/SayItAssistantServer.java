@@ -35,23 +35,18 @@ class SayItAssistantServer {
       }
       server.createContext("/auth", auth);
 
-      PromptHandler pHandler;
-      Prompt prompt = new Prompt();
+      APIHandler api;
       if (args.length > 0 && args[0].equals("--test")) {
-        pHandler = new PromptHandler(
-            new MockChatGPT(), prompt, false
-        );
-        server.createContext("/type", new TypeHandler(prompt, new MockWhisper()));
+        api = new APIHandler(new MockChatGPT(), new MockWhisper(), false);
       } else {
-        pHandler = new PromptHandler(prompt, false);
-        server.createContext("/type", new TypeHandler(prompt, new Whisper()));
+        api = new APIHandler(new ChatGPT(), new Whisper(), false);
       }
 
-      if (pHandler == null || !pHandler.ok()) {
+      if (api == null || !api.ok()) {
         System.err.println("Error: Failed to connect to database.");
         System.exit(3);
       }
-      server.createContext("/prompt", pHandler);
+      server.createContext("/api", api);
 
       ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
       server.setExecutor(threadPoolExecutor);
