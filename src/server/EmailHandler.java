@@ -92,6 +92,8 @@ class EmailHandler implements HttpHandler {
             response = "Error: Request not supported";
         }
 
+        exchange.sendResponseHeaders(code, response.length());
+
         OutputStream outStream = exchange.getResponseBody();
         outStream.write(response.getBytes());
         outStream.close();
@@ -111,7 +113,7 @@ class EmailHandler implements HttpHandler {
             user.replace("smtpHost", smtpHost);
             user.replace("tlsPort", tlsPort);
             user.replace("password", password);
-            return "Success Updating Email";
+            return "Success Updating Email.";
         } catch (Exception e) {
             e.printStackTrace();
             return null;

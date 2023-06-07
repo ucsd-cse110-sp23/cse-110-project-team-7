@@ -184,7 +184,6 @@ class AppFrame extends JFrame {
               break;
             case "SETUP ": 
               new SetupEmailFrame(this.client);
-              //JOptionPane.showMessageDialog(null, new SetupEmailFlow(), "Setup Email", JOptionPane.CANCEL_OPTION);
               
           }
         });

@@ -166,9 +166,9 @@ class HttpBackendClient implements IBackendClient {
   public boolean addEmailDetails(String firstName, String lastName, String displayName, 
     String email, String smtpHost, String tlsPort, String password) {
     try{
-      String res = finishRequest(initRequest(EMAIL_ENPOINT + 
+      String res = finishRequest(initRequest(EMAIL_ENPOINT +  "/" + token + 
         "/" + firstName + "/" + lastName + "/" + displayName + "/" + email + "/" + smtpHost + "/" + tlsPort + "/" + password, "POST"));
-      return res.equals("Success Updating Email");
+      return res.equals("Success Updating Email.");
     } catch (Exception e) {
       return false;
     }
