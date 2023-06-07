@@ -12,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.border.Border;
 
 /**
  * Top-level UI frame that constructs a text region
@@ -182,8 +183,9 @@ class AppFrame extends JFrame {
               }
               break;
             case "SETUP ": 
-              String email = JOptionPane.showInputDialog("Email: ");
-              handleEmailSetup(email);
+              new SetupEmailFrame(this.client);
+              //JOptionPane.showMessageDialog(null, new SetupEmailFlow(), "Setup Email", JOptionPane.CANCEL_OPTION);
+              
           }
         });
         networkThread.start();
@@ -231,7 +233,6 @@ class AppFrame extends JFrame {
         mainView(true);
       });
     }
-
 
   }
 
@@ -283,23 +284,4 @@ class AppFrame extends JFrame {
     }
   }
 
-  private void handleEmailSetup(String email) {
-    if(email == null || !email.contains("@")) {
-      JOptionPane.showMessageDialog(
-        null,
-        "Please type in a valid email",
-        "Invalid email",
-        JOptionPane.ERROR_MESSAGE
-      );
-    }
-
-    if(!client.updateSendEmail(email)) {
-      JOptionPane.showMessageDialog(
-        null,
-        "Server Error", 
-        "Error updatting email", 
-        JOptionPane.ERROR_MESSAGE
-      );
-    };
-  }
 }

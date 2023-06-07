@@ -94,11 +94,7 @@ class PromptHandler implements HttpHandler {
           case "DELETE":
             response = handleDelete(user, query);
             break;
-          case "PUT":
-            System.out.println("In patch case");
-            response = handlePut(user, query);
           default:
-            System.out.println("In default case");
             response = null;
             break;
         }
@@ -107,7 +103,6 @@ class PromptHandler implements HttpHandler {
         response = null;
       }
     }
-
     if (response == null) {
       code = 400;
       response = "Error: Request not supported.";
@@ -238,33 +233,6 @@ class PromptHandler implements HttpHandler {
     return "Successfully deleted.";
   }
 
-  /**
-   * When a patch request is made it will update, the send email
-   * field of a user document
-   * @param user
-   * @param query
-   * @return
-   */
-  String handlePut(Document user, String query) {
-    String currEmail = user.get("sendEmail", String.class);
-    System.out.println("In handle patch");
-
-    try {
-      if(currEmail == null) {
-        System.out.println("Adding field");
-        user.append("sendEmail", query);
-        System.out.println(user.toString());
-        return "Successfully updated email";
-      } else {
-        System.out.println("Updating field");
-        user.replace("sendEmail", query);
-        return "Successfully updated email"; 
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      return null; 
-    }
-  }
 
   /**
    * When a TRACE request is made, respond with a success

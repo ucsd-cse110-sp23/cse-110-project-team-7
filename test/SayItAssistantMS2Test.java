@@ -238,4 +238,8 @@ class SayItAssistantMS2Test {
     assertTrue(client.signup("helen@gmail.com", "password"));
     assertTrue(client.checkToken(client.getToken()));
   }
+
+  /* MS2 User Story 8 tests (BDD scenarios) */
+
+  
 }
