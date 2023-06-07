@@ -108,10 +108,13 @@ class MockBackendClient implements IBackendClient {
     return true;
   }
 
-  @Override
   public boolean addEmailDetails(String firstName, String lastName, String displayName, String email, String smtpHost,
       String tlsPort, String password) {
     // TODO Auto-generated method stub
     return true;
+  }
+
+  public boolean mockClickSave(boolean clicked) {
+    return clicked;
   }
 }
