@@ -29,7 +29,8 @@ class Storage {
           d.get("uuid", String.class),
           d.get("timestamp", Long.class),
           d.get("question", String.class),
-          d.get("response", String.class)
+          d.get("response", String.class),
+          d.get("email", Boolean.class)
       );
     }
   }
@@ -80,10 +81,11 @@ class Storage {
         long timestamp = entry.getLong("timestamp");
         String question = entry.getString("question");
         String response = entry.getString("response");
+        boolean isEmail = entry.getBoolean("email");
         if (question == null || response == null) {
           throw new IllegalArgumentException("Malformed input");
         }
-        add(id, timestamp, question, response);
+        add(id, timestamp, question, response, isEmail);
       }
     } catch (Exception e) {
       System.err.println("Error: History file is malformed.");
@@ -111,8 +113,14 @@ class Storage {
    * Add a new question/response pair to the storage history with
    *   a particular timestamp and ID, useful for deserialization.
    */
-  public void add(String uuid, long timestamp, String question, String response) {
-    history.add(new HistoryItem(uuid, timestamp, question, response));
+  public void add(
+      String uuid,
+      long timestamp,
+      String question,
+      String response,
+      boolean isEmail
+  ) {
+    history.add(new HistoryItem(uuid, timestamp, question, response, isEmail));
   }
 
   /**
@@ -186,6 +194,7 @@ class Storage {
       tmp.put("timestamp", item.timestamp);
       tmp.put("question", item.question);
       tmp.put("response", item.response);
+      tmp.put("email", item.isEmail);
 
       arr.put(tmp);
     }

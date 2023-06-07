@@ -82,6 +82,11 @@ class MockBackendClient implements IBackendClient {
    * Ask a new question by POSTing a question string.
    */
   public APIOperation sendVoice(File stream, String id) {
-    return null;
+    HistoryItem item = new HistoryItem(
+        "What is 2 plus 2?",
+        "2 plus 2 equals 4."
+    );
+    history.add(item);
+    return new APIOperation("question", item.serialize(), true);
   }
 }

@@ -14,6 +14,7 @@ class APIOperation {
   boolean success;
 
   public static List<String> commands = Arrays.asList(
+      "history",
       "question",
       "delete",
       "clear",
@@ -26,6 +27,7 @@ class APIOperation {
     message = null;
     success = false;
   }
+
   APIOperation(String c, String m, boolean s) {
     command = c;
     message = m;
@@ -50,7 +52,8 @@ class APIOperation {
     for (String x : commands) {
       if (lower.startsWith(x)) {
         command = x;
-        args = voice.substring(x.length() + 1);
+        args = voice.substring(x.length() + 1).trim();
+        args = args.substring(0, 1).toUpperCase() + args.substring(1);
         return true;
       }
     }

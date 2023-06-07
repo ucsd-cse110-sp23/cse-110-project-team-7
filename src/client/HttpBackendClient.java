@@ -63,7 +63,11 @@ class HttpBackendClient implements IBackendClient {
    * Return true if the backend is reachable, and false otherwise.
    */
   public boolean connected() {
-    return authHelper("connected", "", "");
+    String res = finishRequest(initRequest(AUTH_ENDPOINT + "/connected", "POST"));
+    if (res == null) {
+      return false;
+    }
+    return res.equals("Successfully connected.");
   }
 
   public String getToken() {
@@ -84,11 +88,15 @@ class HttpBackendClient implements IBackendClient {
    */
   public ArrayList<HistoryItem> getHistory() {
     Storage s = new Storage("[]");
-    String history = finishRequest(initRequest(API_ENDPOINT + "/" + token, "GET"));
-    if (history == null) {
+    String res = finishRequest(initRequest(API_ENDPOINT + "/" + token, "GET"));
+    if (res == null) {
       return null;
     }
-    s.parse(history);
+    APIOperation op = new APIOperation();
+    if (!op.parseJSON(res)) {
+      return null;
+    }
+    s.parse(op.message);
     return s.history;
   }
 
@@ -98,7 +106,8 @@ class HttpBackendClient implements IBackendClient {
    */
   public APIOperation sendVoice(File stream, String id) {
     try {
-      HttpURLConnection conn = initRequest(API_ENDPOINT + "/" + token, "POST");
+      String[] parts = new String[] { API_ENDPOINT, token, id };
+      HttpURLConnection conn = initRequest(String.join("/", parts), "POST");
       OutputStream out = conn.getOutputStream();
       Files.copy(stream.toPath(), out);
       String json = finishRequest(conn);

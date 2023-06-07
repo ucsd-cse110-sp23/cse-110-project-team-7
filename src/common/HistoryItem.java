@@ -11,6 +11,7 @@ class HistoryItem {
   long timestamp;
   String question;
   String response;
+  boolean isEmail;
 
   /**
    * Instantiate a new item with only a question/response pair,
@@ -21,6 +22,7 @@ class HistoryItem {
     timestamp = System.currentTimeMillis() / 1000L;
     question = q;
     response =  r;
+    isEmail = false;
   }
 
   /**
@@ -30,13 +32,14 @@ class HistoryItem {
   HistoryItem(long t, String q, String r) {
     this(q, r);
     timestamp = t;
+    isEmail = false;
   }
 
   /**
    * Instantiate a new item as above, but with a
    *   manually-specified UUID instead of a random one.
    */
-  HistoryItem(String i, long t, String q, String r) {
+  HistoryItem(String i, long t, String q, String r, boolean em) {
     this(t, q, r);
 
     try {
@@ -44,6 +47,7 @@ class HistoryItem {
     } catch (Exception e) {
       id = UUID.randomUUID();
     }
+    isEmail = em;
   }
 
   /**
@@ -57,7 +61,21 @@ class HistoryItem {
         obj.getString("uuid"),
         obj.getLong("timestamp"),
         obj.getString("question"),
-        obj.getString("response")
+        obj.getString("response"),
+        obj.getBoolean("email")
     );
+  }
+
+  /**
+   * Generate a JSON string from the current item.
+   */
+  String serialize() {
+    JSONObject tmp = new JSONObject();
+    tmp.put("uuid", id.toString());
+    tmp.put("timestamp", timestamp);
+    tmp.put("question", question);
+    tmp.put("response", response);
+    tmp.put("email", isEmail);
+    return tmp.toString();
   }
 }

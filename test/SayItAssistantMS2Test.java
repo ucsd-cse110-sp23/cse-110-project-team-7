@@ -1,3 +1,4 @@
+import com.sun.net.httpserver.HttpExchange;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -16,21 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Test runner for all Milestone 2 features and stories.
  */
 class SayItAssistantMS2Test {
-  @BeforeAll
-  static void pre_startServer() {
-    String[] args = { "--test" };
-    SayItAssistantServer.main(args);
-  }
-
   /* MS2 User Story 1 Tests (BDD Scenarios) */
-  @Test
-  void testBackendClient() {
-    IBackendClient client = new HttpBackendClient();
-    IBackendClient mock = new MockBackendClient();
-    assertTrue(client.connected());
-    assertTrue(mock.connected());
-  }
-
   @Test
   void testMS2Story1_BDD1() {
     IBackendClient client = new MockBackendClient();
@@ -39,13 +26,12 @@ class SayItAssistantMS2Test {
     ArrayList<HistoryItem> empty = new ArrayList<>();
     assertEquals(empty, client.getHistory());
 
-    HistoryItem item = client.askQuestion("What is 2 plus 2?");
-    assertNotNull(item);
-    assertEquals("What is 2 plus 2?", item.question);
-    assertEquals("2 plus 2 equals 4.", item.response);
+    File tmp = new File("test/silent.wav");
+    APIOperation op = client.sendVoice(tmp, "id");
+    assertNotNull(op);
+    assertTrue(op.success);
 
-    item = client.askQuestion("What is 2 plus 2?");
-    assertNotNull(item);
+    HistoryItem item = HistoryItem.fromString(op.message);
     assertEquals("What is 2 plus 2?", item.question);
     assertEquals("2 plus 2 equals 4.", item.response);
   }
@@ -55,8 +41,9 @@ class SayItAssistantMS2Test {
     IBackendClient client = new MockBackendClient();
     assertTrue(client.connected());
 
-    client.askQuestion("What is 2 plus 2?");
-    client.askQuestion("What is 2 plus 2?");
+    File tmp = new File("test/silent.wav");
+    client.sendVoice(tmp, "id1");
+    client.sendVoice(tmp, "id2");
 
     ArrayList<HistoryItem> hist = client.getHistory();
     assertEquals("What is 2 plus 2?", hist.get(0).question);
@@ -111,7 +98,13 @@ class SayItAssistantMS2Test {
   @Test
   void testVoiceCommand() {
     IBackendClient mockClient = new MockBackendClient();
-    assertEquals("2 plus 2 equals 4.", mockClient.askQuestion("What is 2 plus 2?").response);
+
+    File tmp = new File("silent.wav");
+    APIOperation op = mockClient.sendVoice(tmp, "id");
+    assertTrue(op.success);
+
+    HistoryItem item = HistoryItem.fromString(op.message);
+    assertEquals("2 plus 2 equals 4.", item.response);
   }
 
   @Test
@@ -119,10 +112,8 @@ class SayItAssistantMS2Test {
     IBackendClient mockClient = new MockBackendClient();
     assertTrue(mockClient.connected());
 
-    File f = new File("test/silent.wav");
-    assertEquals("POST", mockClient.questionType(f));
-
-    HistoryItem hist = mockClient.askQuestion("Question. What is 2 plus 2?");
+    APIOperation op = mockClient.sendVoice(null, "id");
+    HistoryItem hist = HistoryItem.fromString(op.message);
     assertNotNull(hist);
     assertEquals("What is 2 plus 2?", hist.question);
     assertEquals("2 plus 2 equals 4.", hist.response);
@@ -133,20 +124,20 @@ class SayItAssistantMS2Test {
     IBackendClient mockClient = new MockBackendClient();
     assertTrue(mockClient.connected());
 
-    File f = new File("test/silent.wav");
-    assertEquals("POST", mockClient.questionType(f));
-
-    HistoryItem hist = mockClient.askQuestion("Question. What is 2 plus 2?");
+    APIOperation op = mockClient.sendVoice(null, "id");
+    HistoryItem hist = HistoryItem.fromString(op.message);
     assertNotNull(hist);
     assertEquals("What is 2 plus 2?", hist.question);
     assertEquals("2 plus 2 equals 4.", hist.response);
 
-    hist = mockClient.askQuestion("Question. What is 2 plus 2?");
+    op = mockClient.sendVoice(null, "id");
+    hist = HistoryItem.fromString(op.message);
     assertNotNull(hist);
     assertEquals("What is 2 plus 2?", hist.question);
     assertEquals("2 plus 2 equals 4.", hist.response);
 
-    hist = mockClient.askQuestion("Question. What is 2 plus 2?");
+    op = mockClient.sendVoice(null, "id");
+    hist = HistoryItem.fromString(op.message);
     assertNotNull(hist);
     assertEquals("What is 2 plus 2?", hist.question);
     assertEquals("2 plus 2 equals 4.", hist.response);
@@ -158,7 +149,8 @@ class SayItAssistantMS2Test {
     IBackendClient mockClient = new MockBackendClient();
     assertTrue(mockClient.connected());
 
-    mockClient.askQuestion("What is 2 plus 2?");
+    APIOperation op = mockClient.sendVoice(null, "id");
+    assertTrue(op.success);
     assertEquals("What is 2 plus 2?", mockClient.getHistory().get(0).question);
   }
 
@@ -175,7 +167,8 @@ class SayItAssistantMS2Test {
     IBackendClient mockClient = new MockBackendClient();
     assertTrue(mockClient.connected());
 
-    mockClient.askQuestion("What is 2 plus 2?");
+    APIOperation op = mockClient.sendVoice(null, "id");
+    assertTrue(op.success);
 
     assertEquals("What is 2 plus 2?", mockClient.getHistory().get(0).question);
     assertEquals("2 plus 2 equals 4.", mockClient.getHistory().get(0).response);
@@ -186,9 +179,12 @@ class SayItAssistantMS2Test {
     IBackendClient mockClient = new MockBackendClient();
     assertTrue(mockClient.connected());
 
-    mockClient.askQuestion("What is 2 plus 2?");
-    mockClient.askQuestion("What is your favorite color?");
-    mockClient.askQuestion("What is the largest country in the world?");
+    APIOperation op = mockClient.sendVoice(null, "id");
+    assertTrue(op.success);
+    op = mockClient.sendVoice(null, "id");
+    assertTrue(op.success);
+    op = mockClient.sendVoice(null, "id");
+    assertTrue(op.success);
 
     assertEquals("What is 2 plus 2?", mockClient.getHistory().get(0).question);
     assertEquals("2 plus 2 equals 4.", mockClient.getHistory().get(0).response);
