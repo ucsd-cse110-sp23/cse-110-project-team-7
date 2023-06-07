@@ -4,7 +4,7 @@ CLASSPATH = lib/json-20230227.jar:lib/slf4j-api-2.0.7.jar:lib/slf4j-simple-2.0.7
 TESTCLASSPATH = $(CLASSPATH):lib/junit-platform-console-standalone-1.9.2.jar
 CHECKSTYLE = lib/checkstyle-10.10.0-all.jar
 
-ENV = MONGO_URI="mongodb+srv://alrussell:tuPxiYrr4MKZCZJY@cluster0.jevkxgs.mongodb.net/?retryWrites=true&w=majority" OPENAI_TOKEN="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"
+ENV = MONGO_URI="mongodb+srv://alrussell:tuPxiYrr4MKZCZJY@cluster0.jevkxgs.mongodb.net/?retryWrites=true&w=majority" OPENAI_TOKEN="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"
 MOCK_ENV = MONGO_URI="mongodb://dummy" OPENAI_TOKEN="fake_token"
 
 JFLAGS = -Xlint:deprecation
