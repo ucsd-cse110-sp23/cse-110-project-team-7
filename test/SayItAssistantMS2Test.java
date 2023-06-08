@@ -1,7 +1,11 @@
 import com.sun.net.httpserver.HttpExchange;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import org.bson.Document;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
@@ -55,11 +59,24 @@ class SayItAssistantMS2Test {
 
   /* MS2 User Story 2 Tests (BDD Scenarios) */
   @Test
-  void testSignup() {
+  void testClientSignup() {
     IBackendClient mockClient = new MockBackendClient();
     assertTrue(mockClient.connected());
     assertTrue(mockClient.signup("helen@gmail.com", "password"));
     assertNotNull(mockClient.getToken());
+  }
+
+  @Test
+  void testDBSignup() {
+    Map<String, Document> users = new HashMap<>();
+    IDBDriver db = new MockDBDriver(users);
+    assertTrue(db.ok());
+
+    assertEquals("token=email", db.createUser("email", "pass"));
+    assertEquals(1, users.size());
+
+    assertEquals("token=newemail", db.createUser("newemail", "pass"));
+    assertEquals(2, users.size());
   }
 
   @Test
@@ -192,12 +209,24 @@ class SayItAssistantMS2Test {
 
   /* MS2 User Story 7 Tests (BDD Scenarios) */
   @Test
-  void testLogin() {
+  void testClientLogin() {
     IBackendClient mockClient = new MockBackendClient();
     assertTrue(mockClient.connected());
     assertFalse(mockClient.login("helen@gmail.com", "password"));
     assertTrue(mockClient.signup("helen@gmail.com", "password"));
     assertTrue(mockClient.login("helen@gmail.com", "password"));
+  }
+
+  @Test
+  void testDBLogin() {
+    Map<String, Document> users = new HashMap<>();
+    IDBDriver db = new MockDBDriver(users);
+    assertTrue(db.ok());
+
+    users.put("email", new Document("_id", "email"));
+    assertEquals("token=email", db.loginUser("email", "pass"));
+
+    assertNull(db.loginUser("notreal", "pass"));
   }
 
   @Test
@@ -270,12 +299,240 @@ class SayItAssistantMS2Test {
     assertNotNull(client.retrieveEmail());
   }
 
+  /* DBDriver Tests */
+  @Test
+  void testDBDriverGet() {
+    Map<String, Document> users = new HashMap<>();
+    IDBDriver db = new MockDBDriver(users);
+    assertTrue(db.ok());
+    assertNull(db.getUser("email"));
+
+    users.put("email", new Document());
+    assertNotNull(db.getUser("email"));
+  }
+
+  @Test
+  void testDBDriverUser() {
+    Map<String, Document> users = new HashMap<>();
+    IDBDriver db = new MockDBDriver(users);
+    assertTrue(db.ok());
+
+    assertEquals("token=email", db.createUser("email", "pass"));
+    assertEquals(1, users.size());
+
+    assertNotNull(db.loginUser("email", "pass"));
+  }
+
+  @Test
+  void testDBDriverHistory() {
+    Map<String, Document> users = new HashMap<>();
+    IDBDriver db = new MockDBDriver(users);
+    assertTrue(db.ok());
+
+    assertEquals("token=email", db.createUser("email", "pass"));
+
+    Document user = db.getUser("email");
+    assertNotNull(user);
+    assertEquals(0, db.getHistory(user).size());
+
+    assertTrue(db.addHistory(user, new HistoryItem("A", "B")));
+    assertEquals(1, db.getHistory(user).size());
+
+    assertTrue(db.setHistory(user, new ArrayList<Document>()));
+    assertEquals(0, db.getHistory(user).size());
+  }
+
   /* MS2 User Story 9 Tests (BDD Scenarios) */
-  /* TODO */
+  @Test
+  void testMS2Story9_BDD1() {
+    Map<String, Document> users = new HashMap<>();
+    IDBDriver db = new MockDBDriver(users);
+    assertTrue(db.ok());
+
+    assertEquals("token=email", db.createUser("email", "pass"));
+
+    Document user = db.getUser("email");
+    assertNotNull(user);
+    assertEquals(0, db.getHistory(user).size());
+
+    HistoryItem email = new HistoryItem(
+        "Create an email to Jeff.",
+        "Hi Jeff, how are you?"
+    );
+    email.type = "email";
+
+    assertTrue(db.addHistory(user, email));
+    assertEquals(1, db.getHistory(user).size());
+  }
+
+  @Test
+  void testMS2Story9_BDD2() {
+    Map<String, Document> users = new HashMap<>();
+    IDBDriver db = new MockDBDriver(users);
+    assertTrue(db.ok());
+
+    assertEquals("token=email", db.createUser("email", "pass"));
+
+    Document user = db.getUser("email");
+    assertNotNull(user);
+    assertEquals(0, db.getHistory(user).size());
+
+    HistoryItem email = new HistoryItem(
+        "Create an email to Jeff.",
+        "Hi Jeff, how are you?"
+    );
+    email.type = "email";
+
+    assertTrue(db.addHistory(user, email));
+    assertEquals(1, db.getHistory(user).size());
+
+    email = new HistoryItem(
+        "Create an email to Jeff.",
+        "Hi Jeff, how is the weather?"
+    );
+    email.type = "email";
+
+    assertTrue(db.addHistory(user, email));
+    assertEquals(2, db.getHistory(user).size());
+  }
+
+  /* MS2 User Story 10 Tests (BDD Scenarios) */
+  @Test
+  void testMS2Story10_BDD1() {
+    Map<String, Document> users = new HashMap<>();
+    IDBDriver db = new MockDBDriver(users);
+    assertTrue(db.ok());
+
+    assertEquals("token=email", db.createUser("email", "pass"));
+    assertTrue(db.setupEmail(db.getUser("email"), new Document()));
+    IMail mail = new MockMail(db.getUser("email"));
+    assertTrue(mail.ok());
+
+    assertTrue(mail.send("to@to.com", "subj", "body"));
+  }
+
+  @Test
+  void testMS2Story10_BDD2() {
+    Map<String, Document> users = new HashMap<>();
+    IDBDriver db = new MockDBDriver(users);
+    assertTrue(db.ok());
+
+    assertEquals("token=email", db.createUser("email", "pass"));
+    assertFalse(db.setupEmail(db.getUser("email"), null));
+
+    IMail mail = new MockMail(db.getUser("email"));
+    assertFalse(mail.send("to@to.com", "subj", "body"));
+  }
 
   /* MS2 User Story 5 Tests (BDD Scenarios) */
-  /* TODO */
+  @Test
+  void testMS2Story5_BDD1() {
+    Map<String, Document> users = new HashMap<>();
+    IDBDriver db = new MockDBDriver(users);
+    assertTrue(db.ok());
+
+    assertEquals("token=email", db.createUser("email", "pass"));
+
+    Document user = db.getUser("email");
+    assertNotNull(user);
+    assertEquals(0, db.getHistory(user).size());
+
+    assertTrue(db.addHistory(user, new HistoryItem("What is the world?", "My oyster.")));
+    assertEquals(1, db.getHistory(user).size());
+
+    List<Document> hist = db.getHistory(user);
+    hist.remove(0);
+    assertTrue(db.setHistory(user, hist));
+    assertEquals(0, hist.size());
+  }
+
+  @Test
+  void testMS2Story5_BDD2() {
+    Map<String, Document> users = new HashMap<>();
+    IDBDriver db = new MockDBDriver(users);
+    assertTrue(db.ok());
+
+    assertEquals("token=email", db.createUser("email", "pass"));
+
+    Document user = db.getUser("email");
+    assertNotNull(user);
+    assertEquals(0, db.getHistory(user).size());
+
+    assertTrue(db.addHistory(user, new HistoryItem("What is the world?", "My oyster.")));
+    assertTrue(db.addHistory(user, new HistoryItem("What is blue?", "A color.")));
+    assertTrue(db.addHistory(user, new HistoryItem("What is?", "Not sure.")));
+    assertEquals(3, db.getHistory(user).size());
+
+    List<Document> hist = db.getHistory(user);
+    hist.remove(0);
+    assertTrue(db.setHistory(user, hist));
+    assertEquals(2, hist.size());
+  }
+
+  @Test
+  void testMS2Story5_BDD3() {
+    Map<String, Document> users = new HashMap<>();
+    IDBDriver db = new MockDBDriver(users);
+    assertTrue(db.ok());
+
+    assertEquals("token=email", db.createUser("email", "pass"));
+
+    Document user = db.getUser("email");
+    assertNotNull(user);
+    assertEquals(0, db.getHistory(user).size());
+
+    List<Document> hist = db.getHistory(user);
+    if (hist.size() > 0) {
+      hist.remove(0);
+    }
+    assertTrue(db.setHistory(user, hist));
+    assertEquals(0, hist.size());
+  }
 
   /* MS2 User Story 6 Tests (BDD Scenarios) */
-  /* TODO */
+  @Test
+  void testMS2Story6_BDD1() {
+    Map<String, Document> users = new HashMap<>();
+    IDBDriver db = new MockDBDriver(users);
+    assertTrue(db.ok());
+
+    assertEquals("token=email", db.createUser("email", "pass"));
+
+    Document user = db.getUser("email");
+    assertNotNull(user);
+    assertEquals(0, db.getHistory(user).size());
+
+    assertTrue(db.addHistory(user, new HistoryItem("What is the world?", "My oyster.")));
+    assertTrue(db.addHistory(user, new HistoryItem("What is blue?", "A color.")));
+    assertTrue(db.addHistory(user, new HistoryItem("What is?", "Not sure.")));
+
+    List<Document> hist = db.getHistory(user);
+    assertEquals(3, hist.size());
+
+    hist.clear();
+
+    assertTrue(db.setHistory(user, hist));
+    assertEquals(0, db.getHistory(user).size());
+  }
+
+  @Test
+  void testMS2Story6_BDD2() {
+    Map<String, Document> users = new HashMap<>();
+    IDBDriver db = new MockDBDriver(users);
+    assertTrue(db.ok());
+
+    assertEquals("token=email", db.createUser("email", "pass"));
+
+    Document user = db.getUser("email");
+    assertNotNull(user);
+    assertEquals(0, db.getHistory(user).size());
+
+    List<Document> hist = db.getHistory(user);
+    assertEquals(0, hist.size());
+
+    hist.clear();
+
+    assertTrue(db.setHistory(user, hist));
+    assertEquals(0, db.getHistory(user).size());
+  }
 }

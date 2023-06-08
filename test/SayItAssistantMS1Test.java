@@ -3,13 +3,16 @@ import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.bson.Document;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -24,7 +27,7 @@ class SayItAssistantMS1Test {
   @Test
   void testAudioRecorder() {
     File file = new File("question.wav");
-    AudioRecorder recorder = new AudioRecorder();
+    IAudioRecorder recorder = new AudioRecorder();
     if (recorder.start(file)) {
       recorder.stop();
       assertTrue(file.exists());
@@ -32,6 +35,15 @@ class SayItAssistantMS1Test {
     } else {
       System.out.println("System does not have audio input, skipping test.");
     }
+  }
+
+  @Test
+  void testMockAudioRecorder() {
+    File file = new File("question.wav");
+    IAudioRecorder recorder = new MockAudioRecorder();
+    recorder.stop();
+    assertNotNull(file);
+    file.delete();
   }
 
   /* Whisper Tests */
@@ -316,7 +328,14 @@ class SayItAssistantMS1Test {
         .append("password", "dummypass")
         .append("history", hist);
 
-    APIHandler handler = new APIHandler(new MockChatGPT(), new MockWhisper(), user);
+    Map<String, Document> users = new HashMap<>();
+    users.put("token", user);
+    IDBDriver db = new MockDBDriver(users);
+    APIHandler handler = new APIHandler(
+        new MockChatGPT(),
+        new MockWhisper(),
+        db
+    );
 
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     HttpExchange exch = null;
@@ -327,6 +346,7 @@ class SayItAssistantMS1Test {
     }
     assertNotNull(exch);
 
+    db.addHistory(user, new HistoryItem("What is 2 plus 2?", "4"));
     handler.handle(exch);
 
     APIOperation op = new APIOperation();
@@ -334,7 +354,7 @@ class SayItAssistantMS1Test {
 
     assertTrue(op.valid());
     assertEquals("history", op.command);
-    assertEquals("[]", op.message);
+    assertNotEquals("[]", op.message);
     assertTrue(op.success);
 
     os = new ByteArrayOutputStream();
@@ -363,7 +383,13 @@ class SayItAssistantMS1Test {
         .append("password", "dummypass")
         .append("history", hist);
 
-    APIHandler handler = new APIHandler(new MockChatGPT(), new MockWhisper(), user);
+    Map<String, Document> users = new HashMap<>();
+    users.put("token", user);
+    APIHandler handler = new APIHandler(
+        new MockChatGPT(),
+        new MockWhisper(),
+        new MockDBDriver(users)
+    );
 
     InputStream is = null;
     try {

@@ -27,7 +27,7 @@ class AppFrame extends JFrame {
    * Individual UI components and the storage
    *   class they all interact with
    */
-  private AudioRecorder recorder = new AudioRecorder();
+  private IAudioRecorder recorder = new AudioRecorder();
   private File stream = new File(QUESTION_FILE);
   private IBackendClient client;
 

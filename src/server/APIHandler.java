@@ -1,24 +1,14 @@
 import static com.mongodb.client.model.Filters.eq;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Updates;
-import com.mongodb.client.result.UpdateResult;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLDecoder;
-import java.nio.file.Files;
 import java.util.List;
 import org.bson.Document;
-import org.bson.conversions.Bson;
-import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 import org.json.JSONObject;
 
@@ -30,35 +20,14 @@ import org.json.JSONObject;
 class APIHandler implements HttpHandler {
   private static final String QUESTION_FILE = "question.wav";
 
-  private MongoCollection<Document> users;
   private IChatGPT chatGPT;
   private IWhisper whisper;
-  private Document mockUser;
+  private IDBDriver db;
 
-  APIHandler(IChatGPT c, IWhisper w, Document mock) {
+  APIHandler(IChatGPT c, IWhisper w, IDBDriver d) {
     chatGPT = c;
     whisper = w;
-    mockUser = mock;
-
-    try {
-      MongoClient client = MongoClients.create(System.getenv("MONGO_URI"));
-      MongoDatabase database = client.getDatabase("users");
-      users = database.getCollection("users");
-    } catch (Exception e) {
-      users = null;
-    }
-  }
-
-  APIHandler(IChatGPT c, IWhisper w) {
-    this(c, w, null);
-  }
-
-  public boolean mock() {
-    return (mockUser != null);
-  }
-
-  public boolean ok() {
-    return (mock() || users != null);
+    db = d;
   }
 
   /**
@@ -79,10 +48,7 @@ class APIHandler implements HttpHandler {
         throw new Exception("Invalid request token.");
       }
 
-      Document user = mock()
-        ? mockUser
-        : users.find(eq("_id", new ObjectId(token))).first();
-
+      Document user = db.getUser(token);
       if (user == null) {
         throw new Exception("User does not exist.");
       }
@@ -157,57 +123,12 @@ class APIHandler implements HttpHandler {
   }
 
   /**
-   * Helper function for getting the user's history
-   *   as a List, minimizing the number of unchecked
-   *   cast warnings.
-   */
-  private List<Document> userHistory(Document user) {
-    @SuppressWarnings("unchecked")
-    List<Document> hist = (List<Document>) user.get("history");
-    return hist;
-  }
-
-  /**
-   * Helper function to add the given HistoryItem to
-   *   the user's history.
-   */
-  private boolean addToHistory(Document user, HistoryItem item) {
-    List<Document> hist = userHistory(user);
-    if (hist == null) {
-      return false;
-    }
-
-    Storage s = new Storage(hist);
-    Document doc = new Document()
-        .append("uuid", item.id.toString())
-        .append("timestamp", item.timestamp)
-        .append("question", item.question)
-        .append("response", item.response)
-        .append("type", item.type);
-    hist.add(doc);
-
-    if (!mock()) {
-      Bson updates = Updates.set("history", hist);
-      UpdateResult result = users.updateOne(
-          new Document().append("_id", user.get("_id")),
-          updates
-      );
-      if (result.getMatchedCount() == 0) {
-        return false;
-      }
-    } else {
-      user.put("history", hist);
-    }
-    return true;
-  }
-
-  /**
    * Retrieve the specific ID given or all past
    *   questions/responses if none is present.
    */
   private void getHistory(Document user, APIOperation op) {
     op.command = "history";
-    List<Document> hist = userHistory(user);
+    List<Document> hist = db.getHistory(user);
     if (hist == null) {
       return;
     }
@@ -232,7 +153,7 @@ class APIHandler implements HttpHandler {
 
       HistoryItem item = new HistoryItem(question, response);
       item.type = type;
-      if (!addToHistory(user, item)) {
+      if (!db.addHistory(user, item)) {
         return;
       }
 
@@ -254,7 +175,7 @@ class APIHandler implements HttpHandler {
    * Delete the appropriate history item.
    */
   private void deleteQuestion(Document user, String id, APIOperation op) {
-    List<Document> hist = userHistory(user);
+    List<Document> hist = db.getHistory(user);
     if (id == null || hist == null) {
       return;
     }
@@ -271,44 +192,20 @@ class APIHandler implements HttpHandler {
       return;
     }
 
-    if (!mock()) {
-      Bson updates = Updates.set("history", hist);
-      UpdateResult result = users.updateOne(
-          new Document().append("_id", user.get("_id")),
-          updates
-      );
-      if (result.getMatchedCount() == 0) {
-        return;
-      }
-    } else {
-      user.put("history", hist);
-    }
-    op.success = true;
+    op.success = db.setHistory(user, hist);
   }
   
   /**
    * Clear the user's entire history.
    */
   private void clearHistory(Document user, APIOperation op) {
-    List<Document> hist = userHistory(user);
+    List<Document> hist = db.getHistory(user);
     if (hist == null) {
       return;
     }
     hist.clear();
 
-    if (!mock()) {
-      Bson updates = Updates.set("history", hist);
-      UpdateResult result = users.updateOne(
-          new Document().append("_id", user.get("_id")),
-          updates
-      );
-      if (result.getMatchedCount() == 0) {
-        return;
-      }
-    } else {
-      user.put("history", hist);
-    }
-    op.success = true;
+    op.success = db.setHistory(user, hist);
   }
 
   /**
@@ -320,7 +217,7 @@ class APIHandler implements HttpHandler {
       return;
     }
 
-    List<Document> hist = userHistory(user);
+    List<Document> hist = db.getHistory(user);
     if (hist == null) {
       return;
     }
@@ -359,7 +256,7 @@ class APIHandler implements HttpHandler {
 
           HistoryItem item = new HistoryItem(op.message, "Email successfully sent.");
           item.type = "send";
-          if (!addToHistory(user, item)) {
+          if (!db.addHistory(user, item)) {
             return;
           }
 
