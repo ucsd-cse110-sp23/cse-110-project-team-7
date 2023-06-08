@@ -38,6 +38,13 @@ class SayItAssistantServer {
       }
       server.createContext("/api", api);
 
+      EmailHandler eHandler = new EmailHandler();
+      if (!eHandler.ok()) {
+        System.err.println("Error: Failed to connect to database.");
+        System.exit(2);
+      }
+      server.createContext("/email", eHandler);
+      
       ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
       server.setExecutor(threadPoolExecutor);
       server.start();

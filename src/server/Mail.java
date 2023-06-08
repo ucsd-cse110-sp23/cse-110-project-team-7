@@ -1,32 +1,41 @@
 import java.util.Date;
 import java.util.Properties;
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
-import javax.mail.BodyPart;
+import javax.mail.Authenticator;
+import javax.mail.PasswordAuthentication;
 import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 import org.bson.Document;
 
 class Mail implements IMail {
   Session session;
   String from;
+  String display;
 
   Mail(Document user) {
     try {
-      Document email = user.get("email", Document.class);
+      Document email = user.get("emailAccount", Document.class);
+      from = email.get("email", String.class);
+      display = email.get("displayName", String.class);
 
       Properties props = System.getProperties();
-      props.put("mail.smtp.host", email.get("smtp", String.class));
-      session = Session.getInstance(props, null);
-      from = email.get("address", String.class);
+      props.put("mail.smtp.host", email.get("smtpHost", String.class));
+      props.put("mail.smtp.port", email.get("tlsPort", String.class));
+      props.put("mail.smtp.auth", "true");
+      props.put("mail.smtp.starttls.enable", "true");
+
+      Authenticator auth = new Authenticator() {
+        protected PasswordAuthentication getPasswordAuthentication() {
+          return new PasswordAuthentication(
+              from,
+              email.get("password", String.class)
+          );
+        }
+      };
+
+      session = Session.getInstance(props, auth);
     } catch (Exception e) {
       session = null;
     }
@@ -47,7 +56,7 @@ class Mail implements IMail {
       msg.setFrom(addr[0]);
       msg.setReplyTo(addr);
       msg.setSubject(subject, "UTF-8");
-      msg.setText(body, "UTF-8");
+      msg.setText(body + "\n" + display, "UTF-8");
       msg.setSentDate(new Date());
 
       msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to, false));
@@ -55,6 +64,7 @@ class Mail implements IMail {
       Transport.send(msg);
       return true;
     } catch (Exception e) {
+        e.printStackTrace();
       return false;
     }
   }

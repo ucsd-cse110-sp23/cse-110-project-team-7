@@ -16,11 +16,23 @@ interface IBackendClient {
 
   public boolean login(String email, String password);
 
+  public boolean setupEmail(
+      String first,
+      String last,
+      String display,
+      String email,
+      String smtp,
+      String tls,
+      String pass
+  );
+
   public boolean connected();
 
   public boolean checkToken(String tok);
 
   public String getToken();
+
+  public String[] retrieveEmail();
 
   public ArrayList<HistoryItem> getHistory();
 

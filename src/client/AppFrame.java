@@ -31,7 +31,7 @@ class AppFrame extends JFrame {
   private File stream = new File(QUESTION_FILE);
   private IBackendClient client;
 
-  private LoginFlow flow;
+  private LoginFlow loginFlow;
   private HistoryBar hist;
   private QuestionAndResponse convo;
   private TaskBar taskbar;
@@ -90,8 +90,8 @@ class AppFrame extends JFrame {
         throw new Exception();
       }
     } catch (Exception e) {
-      flow = new LoginFlow();
-      add(flow, BorderLayout.CENTER);
+      loginFlow = new LoginFlow();
+      add(loginFlow, BorderLayout.CENTER);
     }
 
     revalidate();
@@ -138,9 +138,9 @@ class AppFrame extends JFrame {
       }
     });
 
-    if (flow != null) {
-      flow.signupDone.addActionListener((ActionEvent e) -> {
-        String msg = flow.checkInputs();
+    if (loginFlow != null) {
+      loginFlow.signupDone.addActionListener((ActionEvent e) -> {
+        String msg = loginFlow.checkInputs();
         if (msg != null) {
           JOptionPane.showMessageDialog(
               null,
@@ -151,7 +151,7 @@ class AppFrame extends JFrame {
           return;
         }
 
-        if (!client.signup(flow.getEmail(), flow.getPassword())) {
+        if (!client.signup(loginFlow.getEmail(), loginFlow.getPassword())) {
           JOptionPane.showMessageDialog(
               null,
               connected ? "Email already in use." : "Failed to reach server.",
@@ -164,8 +164,8 @@ class AppFrame extends JFrame {
         doAutoLogin();
         mainView(true);
       });
-      flow.loginDone.addActionListener((ActionEvent e) -> {
-        if (!client.login(flow.getEmail(), flow.getPassword())) {
+      loginFlow.loginDone.addActionListener((ActionEvent e) -> {
+        if (!client.login(loginFlow.getEmail(), loginFlow.getPassword())) {
           JOptionPane.showMessageDialog(
               null,
               connected ? "Invalid email or password." : "Failed to reach server.",
@@ -186,7 +186,7 @@ class AppFrame extends JFrame {
    */
   private void mainView(boolean hasFlow) {
     if (hasFlow) {
-      remove(flow);
+      remove(loginFlow);
     }
 
     ArrayList<HistoryItem> items = client.getHistory();
@@ -247,10 +247,12 @@ class AppFrame extends JFrame {
       }
 
       Container parent = null;
+      HistoryItem item = null;
       switch (op.command) {
         case "question":
         case "create":
-          HistoryItem item = HistoryItem.fromString(op.message);
+        case "send":
+          item = HistoryItem.fromString(op.message);
           displayItem(item);
           convo.show(item);
           selected = item;
@@ -283,13 +285,9 @@ class AppFrame extends JFrame {
             parent.repaint();
           }
           break;
-        case "send":
-          JOptionPane.showMessageDialog(
-              null,
-              "Email successfully sent.",
-              "SayIt Assistant Error",
-              JOptionPane.INFORMATION_MESSAGE
-          );
+        case "set up":
+        case "setup":
+          new SetupEmailFrame(this.client);
           break;
       }
     });

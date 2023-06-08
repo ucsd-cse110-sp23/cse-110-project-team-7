@@ -234,4 +234,39 @@ class SayItAssistantMS2Test {
     assertTrue(client.signup("helen@gmail.com", "password"));
     assertTrue(client.checkToken(client.getToken()));
   }
+
+  /* MS2 User Story 8 tests (BDD scenarios) */
+  @Test
+  void testMS2Story8_BDD1() {
+    IBackendClient client = new MockBackendClient();
+    assertTrue(client.connected());
+    assertTrue(client.setupEmail("Helen", "Doe", "Helen Doe", "helen@gmail.com", 
+    "smtp.gmail.com", "587", "emailpassword"));
+  }
+
+  @Test
+  void testMS2Story8_BDD2() {
+    IBackendClient client = new MockBackendClient();
+    assertTrue(client.connected());
+    assertTrue(client.setupEmail("Helen", "Doe", "Helen Doe", "helen@gmail.com", 
+    "smtp.gmail.com", "587", "emailpassword"));
+
+    try{
+      Thread.sleep(1000);
+      assertTrue(client.setupEmail("Helen", "Doe", "Helen Doe", "helen@gmail.com", 
+    "smtp.gmail.com", "587", "emailpassword"));
+    } catch(InterruptedException e) {
+      assertTrue(false);
+    }
+    
+  }
+
+  @Test
+  void testMS2Story8_BDD3() {
+    IBackendClient client = new MockBackendClient();
+    assertTrue(client.connected());
+    assertTrue(client.setupEmail("Helen", "Doe", "Helen Doe", "helen@gmail.com",
+                "smtp.gmail.com", "587", "emailpassword"));
+    assertNotNull(client.retrieveEmail());
+  }
 }

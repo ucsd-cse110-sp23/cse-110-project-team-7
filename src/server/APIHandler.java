@@ -107,7 +107,7 @@ class APIHandler implements HttpHandler {
         }
         switch (op.command) {
           case "question":
-            askQuestion(user, false, op);
+            askQuestion(user, "question", op);
             break;
           case "delete":
             deleteQuestion(
@@ -120,7 +120,7 @@ class APIHandler implements HttpHandler {
             clearHistory(user, op);
             break;
           case "create":
-            askQuestion(user, true, op);
+            askQuestion(user, "email", op);
             break;
           case "send":
             sendEmail(
@@ -128,6 +128,11 @@ class APIHandler implements HttpHandler {
                 id,
                 op
             );
+            break;
+          case "set up":
+          case "setup":
+            op.message = "";
+            op.success = true;
             break;
         }
       }
@@ -163,6 +168,40 @@ class APIHandler implements HttpHandler {
   }
 
   /**
+   * Helper function to add the given HistoryItem to
+   *   the user's history.
+   */
+  private boolean addToHistory(Document user, HistoryItem item) {
+    List<Document> hist = userHistory(user);
+    if (hist == null) {
+      return false;
+    }
+
+    Storage s = new Storage(hist);
+    Document doc = new Document()
+        .append("uuid", item.id.toString())
+        .append("timestamp", item.timestamp)
+        .append("question", item.question)
+        .append("response", item.response)
+        .append("type", item.type);
+    hist.add(doc);
+
+    if (!mock()) {
+      Bson updates = Updates.set("history", hist);
+      UpdateResult result = users.updateOne(
+          new Document().append("_id", user.get("_id")),
+          updates
+      );
+      if (result.getMatchedCount() == 0) {
+        return false;
+      }
+    } else {
+      user.put("history", hist);
+    }
+    return true;
+  }
+
+  /**
    * Retrieve the specific ID given or all past
    *   questions/responses if none is present.
    */
@@ -180,42 +219,21 @@ class APIHandler implements HttpHandler {
    * Retrieve the given file and perform
    *   Whisper/ChatGPT operations.
    */
-  private void askQuestion(Document user, boolean isEmail, APIOperation op) {
+  private void askQuestion(Document user, String type, APIOperation op) {
     try {
       String question = URLDecoder.decode(op.args, "UTF-8");
-      String response = chatGPT.ask(question);
+
+      String post = type.equals("email") ? " Please begin with a line starting with \"Subject: \" followed by an empty line, and sign off as [Your Display Name Here]." : "";
+      String response = chatGPT.ask(question + post);
 
       if (response == null) {
         return;
       }
 
-      List<Document> hist = userHistory(user);
-      if (hist == null) {
+      HistoryItem item = new HistoryItem(question, response);
+      item.type = type;
+      if (!addToHistory(user, item)) {
         return;
-      }
-
-      Storage s = new Storage(hist);
-      HistoryItem item = s.add(question, response);
-
-      Document doc = new Document()
-          .append("uuid", item.id.toString())
-          .append("timestamp", item.timestamp)
-          .append("question", question)
-          .append("response", response)
-          .append("email", isEmail);
-      hist.add(doc);
-
-      if (!mock()) {
-        Bson updates = Updates.set("history", hist);
-        UpdateResult result = users.updateOne(
-            new Document().append("_id", user.get("_id")),
-            updates
-        );
-        if (result.getModifiedCount() == 0) {
-          return;
-        }
-      } else {
-        user.put("history", hist);
       }
 
       JSONObject obj = new JSONObject();
@@ -223,7 +241,7 @@ class APIHandler implements HttpHandler {
       obj.put("timestamp", item.timestamp);
       obj.put("question", question);
       obj.put("response", response);
-      obj.put("email", isEmail);
+      obj.put("type", type);
 
       op.message = obj.toString();
       op.success = true;
@@ -259,7 +277,7 @@ class APIHandler implements HttpHandler {
           new Document().append("_id", user.get("_id")),
           updates
       );
-      if (result.getModifiedCount() == 0) {
+      if (result.getMatchedCount() == 0) {
         return;
       }
     } else {
@@ -284,7 +302,7 @@ class APIHandler implements HttpHandler {
           new Document().append("_id", user.get("_id")),
           updates
       );
-      if (result.getModifiedCount() == 0) {
+      if (result.getMatchedCount() == 0) {
         return;
       }
     } else {
@@ -311,19 +329,42 @@ class APIHandler implements HttpHandler {
       for (Document d : hist) {
         if (
             d.get("uuid", String.class).equals(id)
-            && d.get("email", Boolean.class) == Boolean.TRUE
+            && d.get("type", String.class).equals("email")
         ) {
           String res = d.get("response", String.class);
           String[] lines = res.split("\n");
+          int i = 0;
+          while (lines[i].trim().isEmpty()) {
+            i++;
+          }
 
           String pre = "Subject: ";
-          String subj = lines[0].substring(pre.length());
-          String body = res.substring(pre.length() + subj.length() + 1);
-          op.success = mail.send(
-              op.args,
+
+          int ind = res.indexOf(pre) + pre.length();
+          String subj = res.substring(ind, ind + res.substring(ind).indexOf("\n"));
+          String body = res.substring(ind + 1 + res.substring(ind).indexOf("\n") + 1).replace("[Your Display Name Here]", "");
+
+          pre = "Email to ";
+          String to = op.args.substring(pre.length()).replace(" at ", "@");
+          to = to.substring(0, to.length() - 1);
+
+          op.message = "Email to " + to;
+          if (!mail.send(
+              to,
               subj,
-              body
-          );
+              body)
+          ) {
+            return;
+          }
+
+          HistoryItem item = new HistoryItem(op.message, "Email successfully sent.");
+          item.type = "send";
+          if (!addToHistory(user, item)) {
+            return;
+          }
+
+          op.message = item.serialize();
+          op.success = true;
           return;
         }
       }

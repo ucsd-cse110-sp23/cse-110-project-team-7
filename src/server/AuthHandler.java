@@ -4,6 +4,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.UpdateResult;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -15,6 +16,7 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 
@@ -87,6 +89,9 @@ class AuthHandler implements HttpHandler {
       case "connected":
         response = "Successfully connected.";
         break;
+      case "setup":
+        response = handleSetup(params);
+        break;
       default:
         response = null;
         break;
@@ -114,9 +119,17 @@ class AuthHandler implements HttpHandler {
 
     ObjectId id = new ObjectId();
     doc = new Document("_id", id)
-      .append("email", email)
-      .append("password", hashPass(password))
-      .append("history", new ArrayList<Document>());
+        .append("email", email)
+        .append("password", hashPass(password))
+        .append("history", new ArrayList<Document>())
+        .append("emailAccount",
+            new Document("firstName", null)
+                .append("lastName", null)
+                .append("displayName", null)
+                .append("smtpHost", null)
+                .append("tlsPort", null)
+                .append("password", null)
+        );
     users.insertOne(doc);
     return "token=" + id.toString();
   }
@@ -144,6 +157,41 @@ class AuthHandler implements HttpHandler {
       MessageDigest digest = MessageDigest.getInstance("SHA-256");
       return digest.digest(password.getBytes(StandardCharsets.UTF_8));
     } catch (Exception e) {
+      return null;
+    }
+  }
+
+  private String handleSetup(String[] params) {
+    try {
+      String token = params[3];
+      if (params.length == 4) {
+        Document user = users.find(eq("_id", new ObjectId(token))).first();
+        Document emailAccount = user.get("emailAccount", Document.class);
+        return emailAccount.toJson();
+      }
+
+      String[] keys = new String[] {
+        "firstName", "lastName", "displayName",
+        "email", "smtpHost", "tlsPort", "password"
+      };
+
+      Document acct = new Document();
+      for (int i = 0; i < keys.length; i++) {
+        acct.append(keys[i], URLDecoder.decode(params[i + 4], "UTF-8"));
+      }
+
+      Bson updates = Updates.set("emailAccount", acct);
+      UpdateResult result = users.updateOne(
+          new Document().append("_id", new ObjectId(token)),
+          updates
+      );
+
+      if (result.getMatchedCount() == 0) {
+        return null;
+      }
+      return "Success.";
+    } catch (Exception e) {
+      e.printStackTrace();
       return null;
     }
   }

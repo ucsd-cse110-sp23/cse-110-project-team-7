@@ -19,7 +19,9 @@ class APIOperation {
       "delete",
       "clear",
       "create",
-      "send"
+      "send",
+      "set up",
+      "setup"
   );
 
   APIOperation() {
@@ -53,7 +55,9 @@ class APIOperation {
       if (lower.startsWith(x)) {
         command = x;
         args = voice.substring(x.length() + 1).trim();
-        args = args.substring(0, 1).toUpperCase() + args.substring(1);
+        if (args.length() > 0) {
+          args = args.substring(0, 1).toUpperCase() + args.substring(1);
+        }
         return true;
       }
     }

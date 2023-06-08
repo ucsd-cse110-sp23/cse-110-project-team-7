@@ -10,6 +10,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.UUID;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -57,6 +58,72 @@ class HttpBackendClient implements IBackendClient {
 
   public boolean login(String email, String password) {
     return authHelper("login", email, password);
+  }
+
+  public String[] retrieveEmail() {
+    String[] out = new String[7];
+    Arrays.fill(out, "");
+
+    String res = finishRequest(initRequest(AUTH_ENDPOINT + "/setup/" + token, "POST"));
+    if (res == null) {
+      return out;
+    }
+
+    try {
+      JSONTokener tok = new JSONTokener(res);
+      JSONObject obj = new JSONObject(tok);
+
+      String[] keys = new String[] {
+        "firstName", "lastName", "displayName",
+        "email", "smtpHost", "tlsPort", "password"
+      };
+
+      for (int i = 0; i < keys.length; i++) {
+        out[i] = obj.getString(keys[i]);
+      }
+      return out;
+    } catch (Exception e) {
+      return out;
+    }
+  }
+
+  public boolean setupEmail(
+      String first,
+      String last,
+      String display,
+      String email,
+      String smtp,
+      String tls,
+      String pass
+  ) {
+    try {
+      String[] params = new String[7];
+      String[] tmp = new String[] {
+          first,
+          last,
+          display,
+          email,
+          smtp,
+          tls,
+          pass
+      };
+      for (int i = 0; i < tmp.length; i++) {
+        params[i] = URLEncoder.encode(tmp[i], "UTF-8");
+      }
+      String res = finishRequest(
+          initRequest(
+              AUTH_ENDPOINT + "/setup/" + token
+              + "/" + String.join("/", params),
+              "POST"
+          )
+      );
+      if (res == null) {
+        return false;
+      }
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   /**

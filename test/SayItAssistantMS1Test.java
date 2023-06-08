@@ -202,8 +202,8 @@ class SayItAssistantMS1Test {
     Storage s = new Storage("[]");
     assertEquals("[]", s.serialize());
 
-    s.add(dummy_uuid, 0, "hello", "world", false);
-    assertEquals("[{\"question\":\"hello\",\"response\":\"world\",\"uuid\":\"" + dummy_uuid + "\",\"email\":false,\"timestamp\":0}]", s.serialize());
+    s.add(dummy_uuid, 0, "hello", "world", "question");
+    assertEquals("[{\"question\":\"hello\",\"response\":\"world\",\"type\":\"question\",\"uuid\":\"" + dummy_uuid + "\",\"timestamp\":0}]", s.serialize());
   }
 
   /* User Story 2 Tests (BDD Scenarios) */
@@ -380,9 +380,7 @@ class SayItAssistantMS1Test {
     }
     assertNotNull(exch);
 
-    System.out.println("abc");
     handler.handle(exch);
-    System.out.println(os.toString());
 
     APIOperation op = new APIOperation();
     op.parseJSON(os.toString(StandardCharsets.UTF_8));

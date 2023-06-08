@@ -49,7 +49,15 @@ class HistoryBar extends JPanel {
    * Add the given question/response pair to the screen.
    */
   JButton add(HistoryItem item) {
-    String pre = item.isEmail ? "Create Email: " : "Question: ";
+    String pre = "Question: ";
+    switch (item.type) {
+      case "email":
+        pre = "Create: ";
+        break;
+      case "send":
+        pre = "Send: ";
+        break;
+    }
     JButton out = new JButton(pre + item.question);
     out.setMaximumSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
     vbox.add(out, 0);

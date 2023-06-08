@@ -51,6 +51,21 @@ class MockBackendClient implements IBackendClient {
   }
 
   /**
+   * Save the user's email configuration.
+   */
+  public boolean setupEmail(
+      String first,
+      String last,
+      String display,
+      String email,
+      String smtp,
+      String tls,
+      String pass
+  ) {
+    return true;
+  }
+
+  /**
    * Returns whether the client is connected to the backend.
    */
   public boolean connected() {
@@ -69,6 +84,16 @@ class MockBackendClient implements IBackendClient {
    */
   public String getToken() {
     return token;
+  }
+
+  /**
+   * Get the user's email configuration.
+   */
+  public String[] retrieveEmail() {
+    return new String[] {
+      "first", "last", "display",
+      "smtp", "tls", "password"
+    };
   }
 
   /**
