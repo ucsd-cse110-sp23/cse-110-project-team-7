@@ -235,7 +235,7 @@ class SayItAssistantMS2Test {
     assertTrue(client.checkToken(client.getToken()));
   }
 
-  /* MS2 User Story 8 tests (BDD scenarios) */
+  /* MS2 User Story 8 Tests (BDD scenarios) */
   @Test
   void testMS2Story8_BDD1() {
     IBackendClient client = new MockBackendClient();
@@ -269,4 +269,7 @@ class SayItAssistantMS2Test {
                 "smtp.gmail.com", "587", "emailpassword"));
     assertNotNull(client.retrieveEmail());
   }
+
+  /* MS2 User Story 9 Tests (BDD Scenarios) */
+  /* TODO */
 }
