@@ -272,4 +272,7 @@ class SayItAssistantMS2Test {
 
   /* MS2 User Story 9 Tests (BDD Scenarios) */
   /* TODO */
+
+  /* MS2 User Story 5 Tests (BDD Scenarios) */
+  /* TODO */
 }
