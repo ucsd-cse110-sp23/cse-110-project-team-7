@@ -98,12 +98,12 @@ class DBDriver implements IDBDriver {
         .append("password", hashPass(password))
         .append("history", new ArrayList<Document>())
         .append("emailAccount",
-            new Document("firstName", null)
-                .append("lastName", null)
-                .append("displayName", null)
-                .append("smtpHost", null)
-                .append("tlsPort", null)
-                .append("password", null)
+            new Document("firstName", "")
+                .append("lastName", "")
+                .append("displayName", "")
+                .append("smtpHost", "")
+                .append("tlsPort", "")
+                .append("password", "")
         );
     users.insertOne(doc);
     return "token=" + id.toString();

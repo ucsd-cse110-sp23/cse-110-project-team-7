@@ -12,13 +12,11 @@ import org.bson.Document;
 class Mail implements IMail {
   Session session;
   String from;
-  String display;
 
   Mail(Document user) {
     try {
       Document email = user.get("emailAccount", Document.class);
       from = email.get("email", String.class);
-      display = email.get("displayName", String.class);
 
       Properties props = System.getProperties();
       props.put("mail.smtp.host", email.get("smtpHost", String.class));
@@ -56,7 +54,7 @@ class Mail implements IMail {
       msg.setFrom(addr[0]);
       msg.setReplyTo(addr);
       msg.setSubject(subject, "UTF-8");
-      msg.setText(body + "\n" + display, "UTF-8");
+      msg.setText(body, "UTF-8");
       msg.setSentDate(new Date());
 
       msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to, false));

@@ -110,7 +110,7 @@ class APIHandler implements HttpHandler {
       String response = op.serialize();
       byte[] resBytes = response.getBytes("UTF-8");
       exchange.sendResponseHeaders(
-          op.success ? 200 : 400,
+          200,
           resBytes.length
       );
 
@@ -144,8 +144,19 @@ class APIHandler implements HttpHandler {
     try {
       String question = URLDecoder.decode(op.args, "UTF-8");
 
-      String post = type.equals("email") ? " Please begin with a line starting with \"Subject: \" followed by an empty line, and sign off as [Your Display Name Here]." : "";
+      String post = type.equals("email") ? " Please begin with a line starting with \"Subject: \" followed by an empty line, and sign off as [Display Name Here]." : "";
       String response = chatGPT.ask(question + post);
+
+      if (type.equals("email")) {
+        Document email = user.get("emailAccount", Document.class);
+        String display = email.get("displayName", String.class);
+
+        if (response.indexOf("[Display Name Here]") > -1) {
+          response = response.replace("[Display Name Here]", display);
+        } else {
+          response = response + "\n" + display;
+        }
+      }
 
       if (response == null) {
         return;
@@ -237,9 +248,12 @@ class APIHandler implements HttpHandler {
 
           String pre = "Subject: ";
 
+          Document email = user.get("emailAccount", Document.class);
+          String display = email.get("displayName", String.class);
+
           int ind = res.indexOf(pre) + pre.length();
           String subj = res.substring(ind, ind + res.substring(ind).indexOf("\n"));
-          String body = res.substring(ind + 1 + res.substring(ind).indexOf("\n") + 1).replace("[Your Display Name Here]", "");
+          String body = res.substring(ind + 1 + res.substring(ind).indexOf("\n") + 1);
 
           pre = "Email to ";
           String to = op.args.substring(pre.length()).replace(" at ", "@");
