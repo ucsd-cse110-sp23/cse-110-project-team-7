@@ -1,4 +1,3 @@
-
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
@@ -9,7 +8,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -17,18 +15,17 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.JPasswordField;
 import javax.swing.border.Border;
 
 class SetupEmailFrame extends JFrame {
   private static final int WIDTH = 400;
   private static final int HEIGHT = 280;
-  private static final String TOKEN_FILE = ".token";
 
   /*
    * UI Components
    */
   private IBackendClient client;
-  private boolean connected = true;
 
   private JTextField firstName;
   private JTextField lastName;
@@ -43,49 +40,40 @@ class SetupEmailFrame extends JFrame {
 
   SetupEmailFrame(IBackendClient inClient) {
     setSize(WIDTH, HEIGHT);
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setVisible(true);
 
     client = inClient;
-    if (!client.connected()) {
-        JOptionPane.showMessageDialog(
-          null,
-          "Failed to connect to server, application will not function correctly.",
-          "SayIt Assistant Error",
-          JOptionPane.ERROR_MESSAGE
-      );
-      connected = false;
-    }
+    String[] data = client.retrieveEmail();
 
     JPanel paneSetupEmail = new JPanel();
     paneSetupEmail.setLayout(new BoxLayout(paneSetupEmail, BoxLayout.Y_AXIS));
 
     paneSetupEmail.add(new JLabel("First Name: "));
-    firstName = new JTextField();
+    firstName = new JTextField(data[0]);
     paneSetupEmail.add(firstName);
 
     paneSetupEmail.add(new JLabel("Last Name: "));
-    lastName = new JTextField();
+    lastName = new JTextField(data[1]);
     paneSetupEmail.add(lastName);
         
     paneSetupEmail.add(new JLabel("Display Name: "));
-    displayName = new JTextField();
+    displayName = new JTextField(data[2]);
     paneSetupEmail.add(displayName);
 
     paneSetupEmail.add(new JLabel("Email: "));
-    email = new JTextField();
+    email = new JTextField(data[3]);
     paneSetupEmail.add(email);
 
     paneSetupEmail.add(new JLabel("SMTP host: "));
-    smtpHost = new JTextField();
+    smtpHost = new JTextField(data[4]);
     paneSetupEmail.add(smtpHost);
 
     paneSetupEmail.add(new JLabel("TLS port: "));
-    tlsPort = new JTextField();
+    tlsPort = new JTextField(data[5]);
     paneSetupEmail.add(tlsPort);
 
     paneSetupEmail.add(new JLabel("Password: "));
-    password = new JTextField();
+    password = new JPasswordField(data[6]);
     paneSetupEmail.add(password);
 
     cancel = new JButton("Cancel");
@@ -100,44 +88,43 @@ class SetupEmailFrame extends JFrame {
     repaint();
 
     addListeners();
-
   }
 
   void addListeners() {
     this.cancel.addActionListener((ActionEvent e) -> {
-        System.out.println("Checking cancel");
-        this.dispose();
-      });
+      this.dispose();
+    });
     this.save.addActionListener((ActionEvent e) -> {
-      System.out.println("Checking save");
-        String inputCheck = this.checkInputs();
-        if (inputCheck != null) {
+      String inputCheck = this.checkInputs();
+      if (inputCheck != null) {
+        JOptionPane.showMessageDialog(
+          null,
+          inputCheck,
+          "Invalid inputs",
+          JOptionPane.ERROR_MESSAGE
+        );
+      } else {
+        boolean success = client.setupEmail(
+            getFirstName(), 
+            getLastName(), 
+            getDisplayName(), 
+            getEmail(), 
+            getSMTPHost(), 
+            getTLSPort(), 
+            getPassword()
+        );
+        if (!success) {
           JOptionPane.showMessageDialog(
-            null,
-            inputCheck,
-            "Invalid inputs",
-            JOptionPane.ERROR_MESSAGE
-          );
-        } else {
-          Boolean success = client.addEmailDetails(this.getFirstName(), 
-              this.getLastName(), 
-              this.getDisplayName(), 
-              this.getEmail(), 
-              this.getSMTPHost(), 
-              this.getTLSPort(), 
-              this.getPassword());
-          if(!success) {
-            JOptionPane.showMessageDialog(
             null,
             "Error updating email",
             "Server Error",
             JOptionPane.ERROR_MESSAGE
           );
-          } else {
-            this.dispose();
-          }
+        } else {
+          dispose();
         }
-      });
+      }
+    });
   }
 
   public String checkInputs() {
@@ -156,36 +143,33 @@ class SetupEmailFrame extends JFrame {
     }
 
     return null;
-}
+  }
 
-public String getFirstName() {
-    return this.firstName.getText();
-}
+  public String getFirstName() {
+      return this.firstName.getText();
+  }
 
-public String getLastName() {
-    return this.lastName.getText();
-}
+  public String getLastName() {
+      return this.lastName.getText();
+  }
 
-public String getDisplayName() {
-    return this.displayName.getText();
-}
+  public String getDisplayName() {
+      return this.displayName.getText();
+  }
 
-public String getEmail() {
-    return this.email.getText();
-}
+  public String getEmail() {
+      return this.email.getText();
+  }
 
-public String getSMTPHost() {
-    return this.smtpHost.getText();
-}
+  public String getSMTPHost() {
+      return this.smtpHost.getText();
+  }
 
-public String getTLSPort() {
-    return this.tlsPort.getText();
-}
+  public String getTLSPort() {
+      return this.tlsPort.getText();
+  }
 
-public String getPassword() {
-    return this.password.getText();
+  public String getPassword() {
+      return this.password.getText();
+  }
 }
-
-  
-}
-

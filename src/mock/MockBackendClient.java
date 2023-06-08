@@ -51,53 +51,17 @@ class MockBackendClient implements IBackendClient {
   }
 
   /**
-   * Return a fake account token.
+   * Save the user's email configuration.
    */
-  public String getToken() {
-    return token;
-  }
-
-  /**
-   * Validate the user's account token.
-   */
-  public boolean checkToken(String tok) {
-    return (tok != null);
-  }
-
-  /**
-   * Fetch all past questions and responses via a GET request.
-   */
-  public ArrayList<HistoryItem> getHistory() {
-    return history;
-  }
-
-  public String questionType(File stream) {
-    return "POST";
-  }
-  /**
-   * Ask a new question by POSTing a question string.
-   */
-  public HistoryItem askQuestion(String question) {
-    HistoryItem item = new HistoryItem("What is 2 plus 2?", "2 plus 2 equals 4.");
-    history.add(item);
-    return item;
-  }
-
-  /**
-   * Delete a single question based on its UUID.
-   */
-  public boolean deleteQuestion(UUID id) {
-    return true;
-  }
-
-  /**
-   * Clear the entire question/response history.
-   */
-  public boolean clearHistory() {
-    return true;
-  }
-
-  public boolean updateSendEmail(String email) {
+  public boolean setupEmail(
+      String first,
+      String last,
+      String display,
+      String email,
+      String smtp,
+      String tls,
+      String pass
+  ) {
     return true;
   }
 
@@ -108,13 +72,46 @@ class MockBackendClient implements IBackendClient {
     return true;
   }
 
-  public boolean addEmailDetails(String firstName, String lastName, String displayName, String email, String smtpHost,
-      String tlsPort, String password) {
-    // TODO Auto-generated method stub
-    return true;
+  /**
+   * Validate the user's account token.
+   */
+  public boolean checkToken(String tok) {
+    return (tok != null);
   }
 
-  public boolean mockClickSave(boolean clicked) {
-    return clicked;
+  /**
+   * Return a fake account token.
+   */
+  public String getToken() {
+    return token;
+  }
+
+  /**
+   * Get the user's email configuration.
+   */
+  public String[] retrieveEmail() {
+    return new String[] {
+      "first", "last", "display",
+      "smtp", "tls", "password"
+    };
+  }
+
+  /**
+   * Fetch all past questions and responses via a GET request.
+   */
+  public ArrayList<HistoryItem> getHistory() {
+    return history;
+  }
+
+  /**
+   * Ask a new question by POSTing a question string.
+   */
+  public APIOperation sendVoice(File stream, String id) {
+    HistoryItem item = new HistoryItem(
+        "What is 2 plus 2?",
+        "2 plus 2 equals 4."
+    );
+    history.add(item);
+    return new APIOperation("question", item.serialize(), true);
   }
 }

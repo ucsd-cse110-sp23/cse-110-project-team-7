@@ -16,22 +16,25 @@ interface IBackendClient {
 
   public boolean login(String email, String password);
 
-  public String getToken();
+  public boolean setupEmail(
+      String first,
+      String last,
+      String display,
+      String email,
+      String smtp,
+      String tls,
+      String pass
+  );
+
+  public boolean connected();
 
   public boolean checkToken(String tok);
 
+  public String getToken();
+
+  public String[] retrieveEmail();
+
   public ArrayList<HistoryItem> getHistory();
 
-  public String questionType(File stream);
-
-  public HistoryItem askQuestion(String question);
-
-  public boolean deleteQuestion(UUID id);
-
-  public boolean addEmailDetails(String firstName, String lastName, String displayName, 
-  String email, String smtpHost, String tlsPort, String password);
-
-  public boolean clearHistory();
-
-  public boolean connected();
+  public APIOperation sendVoice(File stream, String id);
 }

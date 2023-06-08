@@ -1,5 +1,9 @@
+import com.sun.net.httpserver.HttpExchange;
 import java.io.*;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.bson.Document;
 
@@ -198,8 +202,8 @@ class SayItAssistantMS1Test {
     Storage s = new Storage("[]");
     assertEquals("[]", s.serialize());
 
-    s.add(dummy_uuid, 0, "hello", "world");
-    assertEquals("[{\"question\":\"hello\",\"response\":\"world\",\"uuid\":\"" + dummy_uuid + "\",\"timestamp\":0}]", s.serialize());
+    s.add(dummy_uuid, 0, "hello", "world", "question");
+    assertEquals("[{\"question\":\"hello\",\"response\":\"world\",\"type\":\"question\",\"uuid\":\"" + dummy_uuid + "\",\"timestamp\":0}]", s.serialize());
   }
 
   /* User Story 2 Tests (BDD Scenarios) */
@@ -303,58 +307,100 @@ class SayItAssistantMS1Test {
     }
   }
   
-  /* PromptHandler Tests */
+  /* APIHandler Tests */
   @Test
   void testHandlerGet() {
-    PromptHandler handler = new PromptHandler(new MockChatGPT(), new Prompt(), true);
-    ArrayList<Document> list = new ArrayList<>();
-    list.add(new Document()
-        .append("uuid", "fake_id")
-        .append("timestamp", 1000L)
-        .append("question", "What is 2 plus 2?")
-        .append("response", "4")
-    );
-    Document user = new Document().append("history", list);
+    List<Document> hist = new ArrayList<>();
+    Document user = new Document("_id", "dummy")
+        .append("email", "dummy@email.com")
+        .append("password", "dummypass")
+        .append("history", hist);
 
-    // Query all
-    assertNotNull(handler.handleGet(user, null));
+    APIHandler handler = new APIHandler(new MockChatGPT(), new MockWhisper(), user);
 
-    // Query one that does not exist
-    assertNull(handler.handleGet(user, UUID.randomUUID().toString()));
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    HttpExchange exch = null;
+    try {
+      exch = new MockHttpExchange("GET", new URI("/api/token"), null, os);
+    } catch (Exception e) {
+      assertTrue(false);
+    }
+    assertNotNull(exch);
 
-    // Query one that does exist
-    assertEquals("4", handler.handleGet(user, "fake_id"));
+    handler.handle(exch);
 
-    // Delete from storage, then confirm question no longer exists
-    list.remove(0);
-    assertNull(handler.handleGet(user, "fake_id"));
-    assertEquals("[]", handler.handleGet(user, null));
+    APIOperation op = new APIOperation();
+    op.parseJSON(os.toString(StandardCharsets.UTF_8));
+
+    assertTrue(op.valid());
+    assertEquals("history", op.command);
+    assertEquals("[]", op.message);
+    assertTrue(op.success);
+
+    os = new ByteArrayOutputStream();
+    try {
+      exch = new MockHttpExchange("GET", new URI("/api/token"), null, os);
+    } catch (Exception e) {
+      assertTrue(false);
+    }
+    assertNotNull(exch);
+
+    handler.handle(exch);
+
+    op = new APIOperation();
+    op.parseJSON(os.toString(StandardCharsets.UTF_8));
+
+    assertTrue(op.valid());
+    assertTrue(op.success);
+    assertEquals("history", op.command);
   }
 
   @Test
-  void testHandlerDelete() {
-    PromptHandler handler = new PromptHandler(new MockChatGPT(), new Prompt(), true);
+  void testHandlerPost() {
+    ArrayList<HistoryItem> hist = new ArrayList<>();
+    Document user = new Document("_id", "dummy")
+        .append("email", "dummy@email.com")
+        .append("password", "dummypass")
+        .append("history", hist);
 
-    ArrayList<Document> list = new ArrayList<>();
-    Document user = new Document().append("history", list);
+    APIHandler handler = new APIHandler(new MockChatGPT(), new MockWhisper(), user);
 
-    // Delete non-existent item(s)
-    assertNull(handler.handleDelete(user, UUID.randomUUID().toString()));
+    InputStream is = null;
+    try {
+      is = new FileInputStream("test/silent.wav");
+    } catch (Exception e) {
+      assertTrue(false);
+    }
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    HttpExchange exch = null;
+    try {
+      exch = new MockHttpExchange("POST", new URI("/api/token"), is, os);
+    } catch (Exception e) {
+      assertTrue(false);
+    }
+    assertNotNull(exch);
 
-    // Delete all items
-    assertEquals("Successfully deleted.", handler.handleDelete(user, null));
+    handler.handle(exch);
 
-    // Delete existing item
-    list.add(new Document().append("uuid", "fake_id"));
-    assertEquals("Successfully deleted.", handler.handleDelete(user, "fake_id"));
+    APIOperation op = new APIOperation();
+    op.parseJSON(os.toString(StandardCharsets.UTF_8));
+
+    assertTrue(op.valid());
+    assertEquals("question", op.command);
+    assertNotNull(op.message);
+    assertTrue(op.success);
+
+    assertEquals(1, hist.size());
   }
 
   /* HttpClient Tests */
   @Test
   void testHttpClientGet() {
+    IBackendClient concreteClient = new HttpBackendClient();
     IBackendClient mockClient = new MockBackendClient();
 
     // Should fail gracefully if server is not running
+    assertNull(concreteClient.getHistory());
     assertEquals(0, mockClient.getHistory().size());
   }
 
@@ -363,29 +409,25 @@ class SayItAssistantMS1Test {
     IBackendClient concreteClient = new HttpBackendClient();
     IBackendClient mockClient = new MockBackendClient();
 
-    assertNull(concreteClient.askQuestion(null));
+    assertNull(concreteClient.sendVoice(null, "id"));
 
-    assertNull(concreteClient.askQuestion("What is 2 plus 2?"));
-
-    HistoryItem hist = mockClient.askQuestion(null);
-    assertNotNull(hist);
+    APIOperation op = mockClient.sendVoice(null, "id");
+    assertNotNull(op);
   }
 
   @Test
   void testHttpClientDelete() {
     IBackendClient mockClient = new MockBackendClient();
 
-    assertTrue(mockClient.deleteQuestion(null));
-    assertTrue(mockClient.deleteQuestion(UUID.randomUUID()));
-
-    assertTrue(mockClient.clearHistory());
+    assertNotNull(mockClient.sendVoice(null, "id"));
   }
 
   /* User Story 7 Tests (BDD Scenarios) */
   @Test
   void testStory7_BDD1() {
     IBackendClient client = new MockBackendClient();
-    HistoryItem hist = client.askQuestion(null);
+    APIOperation op = client.sendVoice(null, "id");
+    HistoryItem hist = HistoryItem.fromString(op.message);
     assertEquals(hist.question, "What is 2 plus 2?");
     assertEquals(hist.response, "2 plus 2 equals 4.");
   }
@@ -396,20 +438,19 @@ class SayItAssistantMS1Test {
     ArrayList<HistoryItem> hist = client.getHistory();
     assertNotNull(hist);
 
-    HistoryItem item = client.askQuestion("What is 2 plus 2?");
-    assertNotNull(item);
+    APIOperation op = client.sendVoice(null, "id");
+    assertNotNull(op);
   }
 
   @Test
   void testStory7_BDD3() {
     IBackendClient client = new MockBackendClient();
-    assertTrue(client.deleteQuestion(null));
-    assertTrue(client.deleteQuestion(UUID.randomUUID()));
+    assertNotNull(client.sendVoice(null, "id"));
   }
 
   @Test
   void testStory7_BDD4() {
     IBackendClient client = new MockBackendClient();
-    assertTrue(client.clearHistory());
+    assertNotNull(client.getHistory());
   }
 }

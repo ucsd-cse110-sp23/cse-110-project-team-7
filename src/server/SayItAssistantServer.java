@@ -19,10 +19,6 @@ class SayItAssistantServer {
     }
 
     try {
-      if (args.length > 0 && args[0].equals("--test")) {
-        System.out.println("Launching server in test mode.");
-      }
-
       HttpServer server = HttpServer.create(
           new InetSocketAddress(HOST, PORT),
           0
@@ -35,23 +31,12 @@ class SayItAssistantServer {
       }
       server.createContext("/auth", auth);
 
-      PromptHandler pHandler;
-      Prompt prompt = new Prompt();
-      if (args.length > 0 && args[0].equals("--test")) {
-        pHandler = new PromptHandler(
-            new MockChatGPT(), prompt, false
-        );
-        server.createContext("/type", new TypeHandler(prompt, new MockWhisper()));
-      } else {
-        pHandler = new PromptHandler(prompt, false);
-        server.createContext("/type", new TypeHandler(prompt, new Whisper()));
-      }
-
-      if (pHandler == null || !pHandler.ok()) {
+      APIHandler api = new APIHandler(new ChatGPT(), new Whisper());
+      if (api == null || !api.ok()) {
         System.err.println("Error: Failed to connect to database.");
         System.exit(3);
       }
-      server.createContext("/prompt", pHandler);
+      server.createContext("/api", api);
 
       EmailHandler eHandler = new EmailHandler();
       if (!eHandler.ok()) {

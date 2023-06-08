@@ -63,7 +63,19 @@ class QuestionAndResponse extends JPanel {
    */
   void show(HistoryItem item) {
     if (item != null) {
-      questionArea.setText(item.question);
+      String question = item.question;
+      switch (item.type) {
+        case "question":
+          question = "Question: " + question;
+          break;
+        case "email":
+          question = "Create: " + question;
+          break;
+        case "send":
+          question = "Send: " + question;
+          break;
+      }
+      questionArea.setText(question);
       responseArea.setText(item.response);
     } else {
       questionArea.setText("");

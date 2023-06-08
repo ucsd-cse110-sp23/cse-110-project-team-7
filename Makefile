@@ -1,13 +1,13 @@
 all: bin/SayItAssistantServer.class bin/SayItAssistantClient.class
 
-CLASSPATH = lib/json-20230227.jar:lib/slf4j-api-2.0.7.jar:lib/slf4j-simple-2.0.7.jar:lib/mongodb-driver-core-4.10.0-alpha0.jar:lib/mongodb-driver-sync-4.10.0-alpha0.jar:lib/bson-4.10.0-alpha0.jar:bin
+CLASSPATH = lib/json-20230227.jar:lib/slf4j-api-2.0.7.jar:lib/slf4j-simple-2.0.7.jar:lib/mongodb-driver-core-4.10.0-alpha0.jar:lib/mongodb-driver-sync-4.10.0-alpha0.jar:lib/bson-4.10.0-alpha0.jar:lib/javax.mail.jar:lib/activation-1.1.1.jar:bin
 TESTCLASSPATH = $(CLASSPATH):lib/junit-platform-console-standalone-1.9.2.jar
 CHECKSTYLE = lib/checkstyle-10.10.0-all.jar
 
 ENV = MONGO_URI="mongodb+srv://alrussell:tuPxiYrr4MKZCZJY@cluster0.jevkxgs.mongodb.net/?retryWrites=true&w=majority" OPENAI_TOKEN="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"
 MOCK_ENV = MONGO_URI="mongodb://dummy" OPENAI_TOKEN="fake_token"
 
-JFLAGS = -Xlint:deprecation
+JFLAGS = -Xlint:deprecation -Xlint:unchecked
 
 bin/SayItAssistantClient.class: src/client/*.java src/common/*.java
 	javac -cp $(CLASSPATH) $(JFLAGS) -d bin src/common/*.java src/client/*.java

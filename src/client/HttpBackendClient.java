@@ -10,6 +10,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.UUID;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -27,9 +28,7 @@ import org.json.JSONTokener;
  */
 class HttpBackendClient implements IBackendClient {
   private static final String AUTH_ENDPOINT = "http://localhost:8080/auth";
-  private static final String API_ENDPOINT = "http://localhost:8080/prompt";
-  private static final String TYPE_ENDPOINT = "http://localhost:8080/type";
-  private static final String EMAIL_ENPOINT = "http://localhost:8080/email";
+  private static final String API_ENDPOINT = "http://localhost:8080/api";
 
   private String token;
 
@@ -61,6 +60,83 @@ class HttpBackendClient implements IBackendClient {
     return authHelper("login", email, password);
   }
 
+  public String[] retrieveEmail() {
+    String[] out = new String[7];
+    Arrays.fill(out, "");
+
+    String res = finishRequest(initRequest(AUTH_ENDPOINT + "/setup/" + token, "POST"));
+    if (res == null) {
+      return out;
+    }
+
+    try {
+      JSONTokener tok = new JSONTokener(res);
+      JSONObject obj = new JSONObject(tok);
+
+      String[] keys = new String[] {
+        "firstName", "lastName", "displayName",
+        "email", "smtpHost", "tlsPort", "password"
+      };
+
+      for (int i = 0; i < keys.length; i++) {
+        out[i] = obj.getString(keys[i]);
+      }
+      return out;
+    } catch (Exception e) {
+      return out;
+    }
+  }
+
+  public boolean setupEmail(
+      String first,
+      String last,
+      String display,
+      String email,
+      String smtp,
+      String tls,
+      String pass
+  ) {
+    try {
+      String[] params = new String[7];
+      String[] tmp = new String[] {
+          first,
+          last,
+          display,
+          email,
+          smtp,
+          tls,
+          pass
+      };
+      for (int i = 0; i < tmp.length; i++) {
+        params[i] = URLEncoder.encode(tmp[i], "UTF-8");
+      }
+      String res = finishRequest(
+          initRequest(
+              AUTH_ENDPOINT + "/setup/" + token
+              + "/" + String.join("/", params),
+              "POST"
+          )
+      );
+      if (res == null) {
+        return false;
+      }
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  /**
+   * Return true if the backend is reachable, and false otherwise.
+   */
+  public boolean connected() {
+    String res = finishRequest(initRequest(AUTH_ENDPOINT + "/connected", "POST"));
+    if (res == null) {
+      return false;
+    }
+    return res.equals("Successfully connected.");
+  }
+
   public String getToken() {
     return token;
   }
@@ -79,98 +155,36 @@ class HttpBackendClient implements IBackendClient {
    */
   public ArrayList<HistoryItem> getHistory() {
     Storage s = new Storage("[]");
-    String history = finishRequest(initRequest(API_ENDPOINT + "/" + token, "GET"));
-    if (history == null) {
+    String res = finishRequest(initRequest(API_ENDPOINT + "/" + token, "GET"));
+    if (res == null) {
       return null;
     }
-    s.parse(history);
+    APIOperation op = new APIOperation();
+    if (!op.parseJSON(res)) {
+      return null;
+    }
+    s.parse(op.message);
     return s.history;
   }
 
-  public String questionType(File stream) {
+  /**
+   * Perform some CRUD operation by POSTing a file containing
+   *   voice data to the API.
+   */
+  public APIOperation sendVoice(File stream, String id) {
     try {
-      HttpURLConnection conn = initRequest(TYPE_ENDPOINT + "/" + token, "POST");
+      String[] parts = new String[] { API_ENDPOINT, token, id };
+      HttpURLConnection conn = initRequest(String.join("/", parts), "POST");
       OutputStream out = conn.getOutputStream();
       Files.copy(stream.toPath(), out);
-      String type = finishRequest(conn);
-      return type;
+      String json = finishRequest(conn);
+
+      APIOperation op = new APIOperation();
+      op.parseJSON(json);
+
+      return op;
     } catch (Exception e) {
       return null;
-    }
-  }
-
-  /**
-   * Ask a new question by POSTing a question string.
-   */
-  public HistoryItem askQuestion(String query) {
-    try {
-      String encoded = URLEncoder.encode(query, "UTF-8");
-      String json = finishRequest(initRequest(API_ENDPOINT + "/" + token + "/" + encoded, "POST"));
-
-      JSONTokener tok = new JSONTokener(json);
-      JSONObject obj = new JSONObject(tok);
-      String id = obj.getString("uuid");
-      long timestamp = obj.getLong("timestamp");
-      String question = obj.getString("question");
-      String response = obj.getString("response");
-
-      return new HistoryItem(id, timestamp, question, response);
-    } catch (Exception e) {
-      return null;
-    }
-  }
-
-  /**
-   * Helper method for deleting something, whether it be
-   *   a specific question or all past questions/responses.
-   */
-  private boolean delete(String addendum) {
-    try {
-      String res = finishRequest(initRequest(API_ENDPOINT + addendum, "DELETE"));
-      return res.equals("Successfully deleted.");
-    } catch (Exception e) {
-      return false;
-    }
-  }
-
-  /**
-   * Delete a single question based on its UUID.
-   */
-  public boolean deleteQuestion(UUID id) {
-    if (id == null) {
-      return false;
-    }
-    return delete("/" + token + "/" + id.toString());
-  }
-
-
-  /**
-   * Clear the entire question/response history.
-   */
-  public boolean clearHistory() {
-    return delete("/" + token);
-  }
-
-  /**
-   * Return true if the backend is reachable, and false otherwise.
-   */
-  public boolean connected() {
-    try {
-      String res = finishRequest(initRequest(API_ENDPOINT, "TRACE"));
-      return res.equals("Successfully connected.");
-    } catch (Exception e) {
-      return false;
-    }
-  }
-
-  public boolean addEmailDetails(String firstName, String lastName, String displayName, 
-    String email, String smtpHost, String tlsPort, String password) {
-    try{
-      String res = finishRequest(initRequest(EMAIL_ENPOINT +  "/" + token + 
-        "/" + firstName + "/" + lastName + "/" + displayName + "/" + email + "/" + smtpHost + "/" + tlsPort + "/" + password, "POST"));
-      return res.equals("Success Updating Email.");
-    } catch (Exception e) {
-      return false;
     }
   }
 
