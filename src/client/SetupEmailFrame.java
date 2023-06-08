@@ -14,8 +14,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 import javax.swing.border.Border;
 
 class SetupEmailFrame extends JFrame {
@@ -98,10 +98,10 @@ class SetupEmailFrame extends JFrame {
       String inputCheck = this.checkInputs();
       if (inputCheck != null) {
         JOptionPane.showMessageDialog(
-          null,
-          inputCheck,
-          "Invalid inputs",
-          JOptionPane.ERROR_MESSAGE
+            null,
+            inputCheck,
+            "Invalid inputs",
+            JOptionPane.ERROR_MESSAGE
         );
       } else {
         boolean success = client.setupEmail(
@@ -115,10 +115,10 @@ class SetupEmailFrame extends JFrame {
         );
         if (!success) {
           JOptionPane.showMessageDialog(
-            null,
-            "Error updating email",
-            "Server Error",
-            JOptionPane.ERROR_MESSAGE
+              null,
+              "Error updating email",
+              "Server Error",
+              JOptionPane.ERROR_MESSAGE
           );
         } else {
           dispose();
@@ -128,48 +128,48 @@ class SetupEmailFrame extends JFrame {
   }
 
   public String checkInputs() {
-    if(firstName.getText().length() == 0 
-      || lastName.getText().length() == 0
-      || displayName.getText().length() == 0
-      || email.getText().length() == 0
-      || smtpHost.getText().length() == 0
-      || tlsPort.getText().length() == 0
-      || password.getText().length() == 0 
+    if (firstName.getText().length() == 0 
+        || lastName.getText().length() == 0
+        || displayName.getText().length() == 0
+        || email.getText().length() == 0
+        || smtpHost.getText().length() == 0
+        || tlsPort.getText().length() == 0
+        || password.getText().length() == 0 
     ) {
-        return "Required field(s) are empty.";
+      return "Required field(s) are empty.";
     }
     if (!email.getText().contains("@")) {
-        return "Invalid email format.";
+      return "Invalid email format.";
     }
 
     return null;
   }
 
   public String getFirstName() {
-      return this.firstName.getText();
+    return this.firstName.getText();
   }
 
   public String getLastName() {
-      return this.lastName.getText();
+    return this.lastName.getText();
   }
 
   public String getDisplayName() {
-      return this.displayName.getText();
+    return this.displayName.getText();
   }
 
   public String getEmail() {
-      return this.email.getText();
+    return this.email.getText();
   }
 
   public String getSMTPHost() {
-      return this.smtpHost.getText();
+    return this.smtpHost.getText();
   }
 
   public String getTLSPort() {
-      return this.tlsPort.getText();
+    return this.tlsPort.getText();
   }
 
   public String getPassword() {
-      return this.password.getText();
+    return this.password.getText();
   }
 }

@@ -237,11 +237,14 @@ class AppFrame extends JFrame {
       String id = (selected == null ? "" : selected.id.toString());
       APIOperation op = client.sendVoice(stream, id);
       if (op == null || !op.success) {
-        String msg = "Failed to make request, please try again.";
-
-        if (op != null && op.command.equals("send")) {
+        String msg = "";
+        if (op == null) {
+          msg = "Failed to make request, please try again.";
+        } else if (op.command.equals("send")) {
           msg = "Failed to send email. Are your email settings "
               + "properly configured?";
+        } else {
+          msg = "Invalid command, please try again.";
         }
         JOptionPane.showMessageDialog(
             null,

@@ -14,25 +14,40 @@ class MockDBDriver implements IDBDriver {
     users = u;
   }
 
+  /**
+   * Whether a DB connection has been established.
+   */
   public boolean ok() {
     return true;
   }
 
+  /**
+   * Get a user document based on its token ID.
+   */
   public Document getUser(String token) {
     return users.get(token);
   }
 
+  /**
+   * Get a user's list of HistoryItems as Documents.
+   */
   public List<Document> getHistory(Document user) {
     @SuppressWarnings("unchecked")
     List<Document> out = (List<Document>) user.get("history");
     return out;
   }
 
+  /**
+   * Set a user's history list.
+   */
   public boolean setHistory(Document user, List<Document> hist) {
     user.put("history", hist);
     return true;
   }
 
+  /**
+   * Append an item to a user's history list.
+   */
   public boolean addHistory(Document user, HistoryItem item) {
     @SuppressWarnings("unchecked")
     List<Document> hist = (List<Document>) user.get("history");
@@ -48,11 +63,17 @@ class MockDBDriver implements IDBDriver {
     return true;
   }
 
+  /**
+   * Save email settings using the given Document.
+   */
   public boolean setupEmail(Document user, Document acct) {
     user.append("emailAccount", acct);
     return (user != null && acct != null);
   }
 
+  /**
+   * Create a user with the given email and password.
+   */
   public String createUser(String email, String password) {
     users.put(email,
         new Document("_id", email)
@@ -61,6 +82,9 @@ class MockDBDriver implements IDBDriver {
     return "token=" + email;
   }
 
+  /**
+   * Login a user with the given email and password.
+   */
   public String loginUser(String email, String password) {
     Document doc = users.get(email);
     if (doc == null) {

@@ -144,7 +144,10 @@ class APIHandler implements HttpHandler {
     try {
       String question = URLDecoder.decode(op.args, "UTF-8");
 
-      String post = type.equals("email") ? " Please begin with a line starting with \"Subject: \" followed by an empty line, and sign off as [Display Name Here]." : "";
+      String post = type.equals("email")
+          ? " Please begin with a line starting with \"Subject: \" "
+              + "followed by an empty line, and sign off as [Display Name Here]."
+          : "";
       String response = chatGPT.ask(question + post);
 
       if (type.equals("email")) {
@@ -252,12 +255,13 @@ class APIHandler implements HttpHandler {
           String display = email.get("displayName", String.class);
 
           int ind = res.indexOf(pre) + pre.length();
-          String subj = res.substring(ind, ind + res.substring(ind).indexOf("\n"));
-          String body = res.substring(ind + 1 + res.substring(ind).indexOf("\n") + 1);
 
           pre = "Email to ";
           String to = op.args.substring(pre.length()).replace(" at ", "@");
           to = to.substring(0, to.length() - 1);
+
+          String subj = res.substring(ind, ind + res.substring(ind).indexOf("\n"));
+          String body = res.substring(ind + 1 + res.substring(ind).indexOf("\n") + 1);
 
           op.message = "Email to " + to;
           if (!mail.send(

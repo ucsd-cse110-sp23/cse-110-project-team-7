@@ -1,8 +1,8 @@
 import java.util.Date;
 import java.util.Properties;
 import javax.mail.Authenticator;
-import javax.mail.PasswordAuthentication;
 import javax.mail.Message;
+import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
@@ -39,10 +39,16 @@ class Mail implements IMail {
     }
   }
 
+  /**
+   * Return whether an email is able to be sent.
+   */
   public boolean ok() {
     return (session != null);
   }
 
+  /**
+   * Send an email with the given contents.
+   */
   public boolean send(String to, String subject, String body) {
     try {
       MimeMessage msg = new MimeMessage(session);
@@ -62,7 +68,6 @@ class Mail implements IMail {
       Transport.send(msg);
       return true;
     } catch (Exception e) {
-        e.printStackTrace();
       return false;
     }
   }

@@ -38,20 +38,32 @@ class DBDriver implements IDBDriver {
     }
   }
 
+  /**
+   * Whether a DB connection has been established.
+   */
   public boolean ok() {
     return (users != null);
   }
 
+  /**
+   * Get a user document based on its token ID.
+   */
   public Document getUser(String token) {
     return users.find(eq("_id", new ObjectId(token))).first();
   }
 
+  /**
+   * Get a user's list of HistoryItems as Documents.
+   */
   public List<Document> getHistory(Document user) {
     @SuppressWarnings("unchecked")
     List<Document> out = (List<Document>) user.get("history");
     return out;
   }
 
+  /**
+   * Set a user's history list.
+   */
   public boolean setHistory(Document user, List<Document> hist) {
     Bson updates = Updates.set("history", hist);
     UpdateResult result = users.updateOne(
@@ -61,6 +73,9 @@ class DBDriver implements IDBDriver {
     return (result.getMatchedCount() > 0);
   }
 
+  /**
+   * Append an item to a user's history list.
+   */
   public boolean addHistory(Document user, HistoryItem item) {
     @SuppressWarnings("unchecked")
     List<Document> hist = (List<Document>) user.get("history");
@@ -76,6 +91,9 @@ class DBDriver implements IDBDriver {
     return setHistory(user, hist);
   }
 
+  /**
+   * Save email settings using the given Document.
+   */
   public boolean setupEmail(Document user, Document acct) {
     Bson updates = Updates.set("emailAccount", acct);
     UpdateResult result = users.updateOne(
@@ -86,6 +104,9 @@ class DBDriver implements IDBDriver {
     return (result.getMatchedCount() > 0);
   }
 
+  /**
+   * Create a user with the given email and password.
+   */
   public String createUser(String email, String password) {
     Document doc = users.find(eq("email", email)).first();
     if (doc != null) {
@@ -109,6 +130,9 @@ class DBDriver implements IDBDriver {
     return "token=" + id.toString();
   }
 
+  /**
+   * Login a user with the given email and password.
+   */
   public String loginUser(String email, String password) {
     Document doc = users.find(eq("email", email)).first();
     if (doc == null) {
@@ -122,6 +146,9 @@ class DBDriver implements IDBDriver {
     return "token=" + doc.get("_id").toString();
   }
 
+  /**
+   * Helper function to SHA-256 hash a password.
+   */
   private byte[] hashPass(String password) {
     try {
       MessageDigest digest = MessageDigest.getInstance("SHA-256");

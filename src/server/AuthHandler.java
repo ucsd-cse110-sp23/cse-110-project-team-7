@@ -63,13 +63,13 @@ class AuthHandler implements HttpHandler {
 
     switch (action) {
       case "signup":
-        response = handleSignup(email, pass);
+        response = db.createUser(email, pass);
         break;
       case "login":
-        response = handleLogin(email, pass);
+        response = db.loginUser(email, pass);
         break;
       case "check":
-        response = handleCheck(email);
+        response = (db.getUser(email) != null) ? "Success." : null;
         break;
       case "connected":
         response = "Successfully connected.";
@@ -96,18 +96,10 @@ class AuthHandler implements HttpHandler {
     outStream.close();
   }
 
-  private String handleSignup(String email, String password) {
-    return db.createUser(email, password);
-  }
-
-  private String handleLogin(String email, String password) {
-    return db.loginUser(email, password);
-  }
-
-  private String handleCheck(String token) {
-    return (db.getUser(token) != null) ? "Success." : null;
-  }
-
+  /**
+   * Helper function to store the user's email
+   *   configuration as a Document.
+   */
   private String handleSetup(String[] params) {
     try {
       String token = params[3];
