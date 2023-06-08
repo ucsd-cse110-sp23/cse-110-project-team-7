@@ -8,6 +8,7 @@ import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.UpdateResult;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -82,6 +83,7 @@ class PromptHandler implements HttpHandler {
           throw new Exception();
         }
 
+        System.out.println(method);
         switch (method) {
           case "GET":
             response = handleGet(user, query);
@@ -101,7 +103,6 @@ class PromptHandler implements HttpHandler {
         response = null;
       }
     }
-
     if (response == null) {
       code = 400;
       response = "Error: Request not supported.";
@@ -231,6 +232,7 @@ class PromptHandler implements HttpHandler {
 
     return "Successfully deleted.";
   }
+
 
   /**
    * When a TRACE request is made, respond with a success

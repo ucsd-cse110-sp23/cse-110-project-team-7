@@ -28,6 +28,9 @@ interface IBackendClient {
 
   public boolean deleteQuestion(UUID id);
 
+  public boolean addEmailDetails(String firstName, String lastName, String displayName, 
+  String email, String smtpHost, String tlsPort, String password);
+
   public boolean clearHistory();
 
   public boolean connected();

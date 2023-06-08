@@ -97,10 +97,24 @@ class MockBackendClient implements IBackendClient {
     return true;
   }
 
+  public boolean updateSendEmail(String email) {
+    return true;
+  }
+
   /**
    * Returns whether the client is connected to the backend.
    */
   public boolean connected() {
     return true;
+  }
+
+  public boolean addEmailDetails(String firstName, String lastName, String displayName, String email, String smtpHost,
+      String tlsPort, String password) {
+    // TODO Auto-generated method stub
+    return true;
+  }
+
+  public boolean mockClickSave(boolean clicked) {
+    return clicked;
   }
 }

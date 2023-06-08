@@ -29,6 +29,7 @@ class HttpBackendClient implements IBackendClient {
   private static final String AUTH_ENDPOINT = "http://localhost:8080/auth";
   private static final String API_ENDPOINT = "http://localhost:8080/prompt";
   private static final String TYPE_ENDPOINT = "http://localhost:8080/type";
+  private static final String EMAIL_ENPOINT = "http://localhost:8080/email";
 
   private String token;
 
@@ -142,6 +143,7 @@ class HttpBackendClient implements IBackendClient {
     return delete("/" + token + "/" + id.toString());
   }
 
+
   /**
    * Clear the entire question/response history.
    */
@@ -156,6 +158,17 @@ class HttpBackendClient implements IBackendClient {
     try {
       String res = finishRequest(initRequest(API_ENDPOINT, "TRACE"));
       return res.equals("Successfully connected.");
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  public boolean addEmailDetails(String firstName, String lastName, String displayName, 
+    String email, String smtpHost, String tlsPort, String password) {
+    try{
+      String res = finishRequest(initRequest(EMAIL_ENPOINT +  "/" + token + 
+        "/" + firstName + "/" + lastName + "/" + displayName + "/" + email + "/" + smtpHost + "/" + tlsPort + "/" + password, "POST"));
+      return res.equals("Success Updating Email.");
     } catch (Exception e) {
       return false;
     }

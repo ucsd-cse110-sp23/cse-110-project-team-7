@@ -12,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.border.Border;
 
 /**
  * Top-level UI frame that constructs a text region
@@ -31,7 +32,7 @@ class AppFrame extends JFrame {
   private File stream = new File(QUESTION_FILE);
   private IBackendClient client;
 
-  private LoginFlow flow;
+  private LoginFlow loginFlow;
   private HistoryBar hist;
   private QuestionAndResponse convo;
   private TaskBar taskbar;
@@ -90,8 +91,8 @@ class AppFrame extends JFrame {
         throw new Exception();
       }
     } catch (Exception e) {
-      flow = new LoginFlow();
-      add(flow, BorderLayout.CENTER);
+      loginFlow = new LoginFlow();
+      add(loginFlow, BorderLayout.CENTER);
     }
 
     revalidate();
@@ -181,15 +182,18 @@ class AppFrame extends JFrame {
                 parent.repaint();
               }
               break;
+            case "SETUP ": 
+              new SetupEmailFrame(this.client);
+              
           }
         });
         networkThread.start();
       }
     });
 
-    if (flow != null) {
-      flow.signupDone.addActionListener((ActionEvent e) -> {
-        String msg = flow.checkInputs();
+    if (loginFlow != null) {
+      loginFlow.signupDone.addActionListener((ActionEvent e) -> {
+        String msg = loginFlow.checkInputs();
         if (msg != null) {
           JOptionPane.showMessageDialog(
               null,
@@ -200,7 +204,7 @@ class AppFrame extends JFrame {
           return;
         }
 
-        if (!client.signup(flow.getEmail(), flow.getPassword())) {
+        if (!client.signup(loginFlow.getEmail(), loginFlow.getPassword())) {
           JOptionPane.showMessageDialog(
               null,
               connected ? "Email already in use." : "Failed to reach server.",
@@ -213,8 +217,8 @@ class AppFrame extends JFrame {
         doAutoLogin();
         mainView(true);
       });
-      flow.loginDone.addActionListener((ActionEvent e) -> {
-        if (!client.login(flow.getEmail(), flow.getPassword())) {
+      loginFlow.loginDone.addActionListener((ActionEvent e) -> {
+        if (!client.login(loginFlow.getEmail(), loginFlow.getPassword())) {
           JOptionPane.showMessageDialog(
               null,
               connected ? "Invalid email or password." : "Failed to reach server.",
@@ -228,6 +232,7 @@ class AppFrame extends JFrame {
         mainView(true);
       });
     }
+
   }
 
   /**
@@ -235,7 +240,7 @@ class AppFrame extends JFrame {
    */
   private void mainView(boolean hasFlow) {
     if (hasFlow) {
-      remove(flow);
+      remove(loginFlow);
     }
 
     ArrayList<HistoryItem> items = client.getHistory();
@@ -277,4 +282,5 @@ class AppFrame extends JFrame {
       }
     }
   }
+
 }
