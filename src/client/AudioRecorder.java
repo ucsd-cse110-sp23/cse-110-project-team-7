@@ -9,7 +9,7 @@ import javax.sound.sampled.TargetDataLine;
  * A class for handling microphone input, for use with
  *   OpenAI's Whisper API.
  */
-public class AudioRecorder {
+public class AudioRecorder implements IAudioRecorder {
   private AudioFormat format;
   private TargetDataLine targetDataLine;
   private Thread audioThread;

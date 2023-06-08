@@ -26,24 +26,39 @@ class MockHttpExchange extends HttpExchange {
     os = o;
   }
 
+  /**
+   * The current request method (e.g. GET, POST, etc.).
+   */
   @Override
   public String getRequestMethod() {
     return method;
   }
 
+  /**
+   * The current request URI (e.g. localhost:8080/api).
+   */
   @Override
   public URI getRequestURI() {
     return uri;
   }
 
+  /**
+   * The request body, potentially containing voice data.
+   */
   @Override
   public InputStream getRequestBody() {
     return is;
   }
 
+  /**
+   * Set the HTTP response code and content length.
+   */
   @Override
   public void sendResponseHeaders(int code, long len) { }
 
+  /**
+   * Get the output stream, for writing a response.
+   */
   @Override
   public OutputStream getResponseBody() {
     return os;

@@ -1,5 +1,3 @@
-import org.bson.Document;
-
 interface IMail {
   public boolean ok();
 

@@ -25,25 +25,10 @@ import org.bson.types.ObjectId;
  *   sign up and login to their accounts over HTTP.
  */
 class AuthHandler implements HttpHandler {
-  private MongoCollection<Document> users;
+  IDBDriver db;
 
-  AuthHandler() {
-    try {
-      if (System.getenv("MONGO_URI") == null) {
-        throw new Exception("MONGO_URI environment variable not defined.");
-      }
-
-      MongoClient client = MongoClients.create(System.getenv("MONGO_URI"));
-      MongoDatabase database = client.getDatabase("users");
-      users = database.getCollection("users");
-    } catch (Exception e) {
-      e.printStackTrace();
-      users = null;
-    }
-  }
-
-  public boolean ok() {
-    return (users != null);
+  AuthHandler(IDBDriver d) {
+    db = d;
   }
 
   /**
@@ -78,13 +63,13 @@ class AuthHandler implements HttpHandler {
 
     switch (action) {
       case "signup":
-        response = handleSignup(email, pass);
+        response = db.createUser(email, pass);
         break;
       case "login":
-        response = handleLogin(email, pass);
+        response = db.loginUser(email, pass);
         break;
       case "check":
-        response = handleCheck(email);
+        response = (db.getUser(email) != null) ? "Success." : null;
         break;
       case "connected":
         response = "Successfully connected.";
@@ -111,63 +96,17 @@ class AuthHandler implements HttpHandler {
     outStream.close();
   }
 
-  private String handleSignup(String email, String password) {
-    Document doc = users.find(eq("email", email)).first();
-    if (doc != null) {
-      return null;
-    }
-
-    ObjectId id = new ObjectId();
-    doc = new Document("_id", id)
-        .append("email", email)
-        .append("password", hashPass(password))
-        .append("history", new ArrayList<Document>())
-        .append("emailAccount",
-            new Document("firstName", null)
-                .append("lastName", null)
-                .append("displayName", null)
-                .append("smtpHost", null)
-                .append("tlsPort", null)
-                .append("password", null)
-        );
-    users.insertOne(doc);
-    return "token=" + id.toString();
-  }
-
-  private String handleLogin(String email, String password) {
-    Document doc = users.find(eq("email", email)).first();
-    if (doc == null) {
-      return null;
-    }
-
-    byte[] hashed = hashPass(password);
-    if (!doc.get("password").equals(new Binary(hashed))) {
-      return null;
-    }
-    return "token=" + doc.get("_id").toString();
-  }
-
-  private String handleCheck(String token) {
-    Document doc = users.find(eq("_id", new ObjectId(token))).first();
-    return (doc != null) ? "Success." : null;
-  }
-
-  private byte[] hashPass(String password) {
-    try {
-      MessageDigest digest = MessageDigest.getInstance("SHA-256");
-      return digest.digest(password.getBytes(StandardCharsets.UTF_8));
-    } catch (Exception e) {
-      return null;
-    }
-  }
-
+  /**
+   * Helper function to store the user's email
+   *   configuration as a Document.
+   */
   private String handleSetup(String[] params) {
     try {
       String token = params[3];
+      Document user = db.getUser(token);
+
       if (params.length == 4) {
-        Document user = users.find(eq("_id", new ObjectId(token))).first();
-        Document emailAccount = user.get("emailAccount", Document.class);
-        return emailAccount.toJson();
+        return user.get("emailAccount", Document.class).toJson();
       }
 
       String[] keys = new String[] {
@@ -180,16 +119,7 @@ class AuthHandler implements HttpHandler {
         acct.append(keys[i], URLDecoder.decode(params[i + 4], "UTF-8"));
       }
 
-      Bson updates = Updates.set("emailAccount", acct);
-      UpdateResult result = users.updateOne(
-          new Document().append("_id", new ObjectId(token)),
-          updates
-      );
-
-      if (result.getMatchedCount() == 0) {
-        return null;
-      }
-      return "Success.";
+      return (db.setupEmail(user, acct) ? "Success." : null);
     } catch (Exception e) {
       e.printStackTrace();
       return null;

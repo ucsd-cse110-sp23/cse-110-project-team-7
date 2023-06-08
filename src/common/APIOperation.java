@@ -36,6 +36,10 @@ class APIOperation {
     success = s;
   }
 
+  /**
+   * Return whether the current command is a
+   *   recognized one.
+   */
   boolean valid() {
     if (command == null) {
       return false;
@@ -49,6 +53,10 @@ class APIOperation {
     return false;
   }
 
+  /**
+   * Determine the desired command based on the
+   *   given transcription.
+   */
   boolean parseVoice(String voice) {
     String lower = voice.toLowerCase();
     for (String x : commands) {
@@ -64,6 +72,9 @@ class APIOperation {
     return false;
   }
 
+  /**
+   * Reconstruct an APIOperation from its encoded JSON.
+   */
   boolean parseJSON(String json) {
     try {
       JSONTokener tok = new JSONTokener(json);
@@ -80,6 +91,9 @@ class APIOperation {
     return valid();
   }
 
+  /**
+   * Encode the current APIOperation as JSON.
+   */
   String serialize() {
     JSONObject obj = new JSONObject();
     obj.put("command", command);

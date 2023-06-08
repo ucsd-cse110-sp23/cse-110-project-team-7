@@ -27,7 +27,7 @@ class AppFrame extends JFrame {
    * Individual UI components and the storage
    *   class they all interact with
    */
-  private AudioRecorder recorder = new AudioRecorder();
+  private IAudioRecorder recorder = new AudioRecorder();
   private File stream = new File(QUESTION_FILE);
   private IBackendClient client;
 
@@ -237,9 +237,18 @@ class AppFrame extends JFrame {
       String id = (selected == null ? "" : selected.id.toString());
       APIOperation op = client.sendVoice(stream, id);
       if (op == null || !op.success) {
+        String msg = "";
+        if (op == null) {
+          msg = "Failed to make request, please try again.";
+        } else if (op.command.equals("send")) {
+          msg = "Failed to send email. Are your email settings "
+              + "properly configured?";
+        } else {
+          msg = "Invalid command, please try again.";
+        }
         JOptionPane.showMessageDialog(
             null,
-            "Failed to make request.",
+            msg,
             "SayIt Assistant Error",
             JOptionPane.ERROR_MESSAGE
         );

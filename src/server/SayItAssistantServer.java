@@ -24,26 +24,17 @@ class SayItAssistantServer {
           0
       );
 
-      AuthHandler auth = new AuthHandler();
-      if (!auth.ok()) {
+      IDBDriver db = new DBDriver();
+      if (!db.ok()) {
         System.err.println("Error: Failed to connect to database.");
         System.exit(2);
       }
+
+      AuthHandler auth = new AuthHandler(db);
       server.createContext("/auth", auth);
 
-      APIHandler api = new APIHandler(new ChatGPT(), new Whisper());
-      if (api == null || !api.ok()) {
-        System.err.println("Error: Failed to connect to database.");
-        System.exit(3);
-      }
+      APIHandler api = new APIHandler(new ChatGPT(), new Whisper(), db);
       server.createContext("/api", api);
-
-      EmailHandler eHandler = new EmailHandler();
-      if (!eHandler.ok()) {
-        System.err.println("Error: Failed to connect to database.");
-        System.exit(2);
-      }
-      server.createContext("/email", eHandler);
       
       ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
       server.setExecutor(threadPoolExecutor);
